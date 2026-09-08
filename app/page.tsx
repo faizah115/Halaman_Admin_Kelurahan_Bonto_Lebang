@@ -58,9 +58,9 @@ export default async function Home() {
         <div className="max-w-5xl mx-auto">
           <div className="flex flex-col md:flex-row items-start gap-12">
 
-            {/* Kolom Kiri: Foto Lurah */}
-            <div className="flex-shrink-0 flex flex-col items-center md:items-start">
-              <div className="w-72 h-72 md:w-96 md:h-96 rounded-full overflow-hidden shadow-md flex items-center justify-center bg-gray-200 dark:bg-gray-700">
+            {/* Kolom Kiri: Foto Lurah (Centered on mobile, left-aligned on desktop) */}
+            <div className="w-full flex justify-center md:w-auto md:block flex-shrink-0">
+              <div className="w-72 h-72 md:w-96 md:h-96 rounded-full overflow-hidden shadow-md flex items-center justify-center bg-gray-200 dark:bg-gray-700 mx-auto md:mx-0">
                 {profilData?.foto_lurah_url ? (
                   <img
                     src={profilData.foto_lurah_url}
@@ -73,8 +73,8 @@ export default async function Home() {
               </div>
             </div>
 
-            {/* Kolom Kanan: Semua Teks */}
-            <div className="flex-1">
+            {/* Kolom Kanan: Semua Teks (Center-aligned on mobile, left-aligned on desktop) */}
+            <div className="flex-1 text-center md:text-left">
 
               {/* 1. Judul Utama */}
               <h2
