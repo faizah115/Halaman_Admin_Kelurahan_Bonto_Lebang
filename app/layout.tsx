@@ -55,7 +55,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
                 <p>Kabupaten Bantaeng</p>
                 <p>Provinsi Sulawesi Selatan</p>
                 <p className="mt-3 text-red-100">
-                  <span className="font-semibold text-white">Kode Pos:</span> 92461
+                  <span className="font-semibold text-white">Kode Pos:</span> 92451
                 </p>
                 <p className="text-red-100">
                   <span className="font-semibold text-white">Jam Pelayanan:</span><br />
@@ -72,11 +72,11 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
               <ul className="space-y-3 text-sm text-red-100">
                 <li className="flex items-start gap-2">
                   <span className="mt-0.5">📍</span>
-                  <span>Jl. Bonto Lebang, Kecamatan Bissappu, Kabupaten Bantaeng</span>
+                  <span>Jl. Pemandian Alam Bissappu, Bonto Lebang, Kec. Bissappu, Kabupaten Bantaeng, Sulawesi Selatan</span>
                 </li>
                 <li className="flex items-center gap-2">
                   <span>📱</span>
-                  <a href="tel:+62411000000" className="font-bold text-white hover:underline transition">+62 411 000 000</a>
+                  <span className="font-bold text-white">-</span>
                 </li>
               </ul>
 
