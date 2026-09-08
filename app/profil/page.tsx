@@ -4,7 +4,7 @@ import SOTKSectionClient from '@/components/SOTKSectionClient';
 
 export const revalidate = 60; // ISR every minute
 
-// Placeholder struktur jika database belum diisi (12 anggota)
+// Placeholder struktur jika database belum diisi (8 anggota awal)
 const strukturPlaceholder = [
   { id: 1, jabatan: 'Lurah', nama: 'Nama Lurah', foto_url: null },
   { id: 2, jabatan: 'Sekretaris Kelurahan', nama: 'Nama Sekretaris', foto_url: null },
@@ -14,10 +14,6 @@ const strukturPlaceholder = [
   { id: 6, jabatan: 'Staf Pelayanan Publik', nama: 'Nama Staf', foto_url: null },
   { id: 7, jabatan: 'Staf Keuangan & Bendahara', nama: 'Nama Staf', foto_url: null },
   { id: 8, jabatan: 'Staf Trantib & Ketertiban', nama: 'Nama Staf', foto_url: null },
-  { id: 9, jabatan: 'Staf Kebersihan & Lingkungan', nama: 'Nama Staf', foto_url: null },
-  { id: 10, jabatan: 'Staf Pengelola Data & IT', nama: 'Nama Staf', foto_url: null },
-  { id: 11, jabatan: 'Staf Kesejahteraan Masyarakat', nama: 'Nama Staf', foto_url: null },
-  { id: 12, jabatan: 'Staf Umum & Kepegawaian', nama: 'Nama Staf', foto_url: null },
 ];
 
 export default async function ProfilPage() {

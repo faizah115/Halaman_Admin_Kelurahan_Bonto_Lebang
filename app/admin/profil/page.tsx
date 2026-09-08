@@ -35,10 +35,6 @@ export default function AdminProfilPage() {
     { id: 6, jabatan: 'Staf Pelayanan Publik', nama: 'Nama Staf', foto_url: null },
     { id: 7, jabatan: 'Staf Keuangan & Bendahara', nama: 'Nama Staf', foto_url: null },
     { id: 8, jabatan: 'Staf Trantib & Ketertiban', nama: 'Nama Staf', foto_url: null },
-    { id: 9, jabatan: 'Staf Kebersihan & Lingkungan', nama: 'Nama Staf', foto_url: null },
-    { id: 10, jabatan: 'Staf Pengelola Data & IT', nama: 'Nama Staf', foto_url: null },
-    { id: 11, jabatan: 'Staf Kesejahteraan Masyarakat', nama: 'Nama Staf', foto_url: null },
-    { id: 12, jabatan: 'Staf Umum & Kepegawaian', nama: 'Nama Staf', foto_url: null },
   ]);
 
   const [namaLurah, setNamaLurah] = useState('');
