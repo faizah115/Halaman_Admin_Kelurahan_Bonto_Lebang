@@ -42,7 +42,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <footer className="bg-[#6B1124] text-white mt-auto">
 
           {/* Main footer grid */}
-          <div className="max-w-7xl mx-auto px-6 py-14 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10">
+          <div className="max-w-7xl mx-auto px-6 py-14 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10">
 
             {/* 1. Identitas & Alamat */}
             <div>
@@ -57,7 +57,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
                 <p className="mt-3 text-red-100">
                   <span className="font-semibold text-white">Kode Pos:</span> 92461
                 </p>
-                <p className="text-red-100">11
+                <p className="text-red-100">
                   <span className="font-semibold text-white">Jam Pelayanan:</span><br />
                   Senin – Jumat, 08.00 – 16.00 WITA
                 </p>
@@ -78,18 +78,12 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
                   <span>📱</span>
                   <a href="tel:+62411000000" className="font-bold text-white hover:underline transition">+62 411 000 000</a>
                 </li>
-                <li className="flex items-center gap-2">
-                  <span>✉️</span>
-                  <a href="mailto:kelurahan.bontolebang@bantaengkab.go.id" className="font-bold text-white hover:underline transition break-all">
-                    kelurahan.bontolebang@bantaengkab.go.id
-                  </a>
-                </li>
               </ul>
 
             </div>
 
             {/* 3. Tautan Eksternal */}
-            <div className="sm:col-span-2 lg:col-span-1">
+            <div>
               <h3 className="text-white font-bold text-lg mb-4 flex items-center gap-2">
                 <span>🔗</span> Jelajahi Tautan Resmi
               </h3>
@@ -111,25 +105,6 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
                   </li>
                 ))}
               </ul>
-            </div>
-
-            {/* 4. Media Sosial */}
-            <div>
-              <h3 className="text-white font-bold text-lg mb-4 flex items-center gap-2">
-                <span>📱</span> Media Sosial
-              </h3>
-              <p className="text-sm text-red-100 mb-4">Ikuti kami di media sosial untuk informasi terbaru.</p>
-              <div className="flex gap-4">
-                <a href="#" aria-label="Facebook" className="w-9 h-9 rounded-full bg-white/20 hover:bg-white/40 flex items-center justify-center transition-colors duration-200">
-                  <svg className="w-4 h-4 fill-white" viewBox="0 0 24 24"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" /></svg>
-                </a>
-                <a href="#" aria-label="Instagram" className="w-9 h-9 rounded-full bg-white/20 hover:bg-white/40 flex items-center justify-center transition-colors duration-200">
-                  <svg className="w-4 h-4 fill-white" viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="5" ry="5" /><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" fill="none" stroke="white" strokeWidth="2" /><line x1="17.5" y1="6.5" x2="17.51" y2="6.5" stroke="white" strokeWidth="2" strokeLinecap="round" /></svg>
-                </a>
-                <a href="#" aria-label="YouTube" className="w-9 h-9 rounded-full bg-white/20 hover:bg-white/40 flex items-center justify-center transition-colors duration-200">
-                  <svg className="w-4 h-4 fill-white" viewBox="0 0 24 24"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.95-1.96C18.88 4 12 4 12 4s-6.88 0-8.59.46a2.78 2.78 0 0 0-1.95 1.96A29 29 0 0 0 1 12a29 29 0 0 0 .46 5.58A2.78 2.78 0 0 0 3.41 19.6C5.12 20 12 20 12 20s6.88 0 8.59-.46a2.78 2.78 0 0 0 1.95-1.96A29 29 0 0 0 23 12a29 29 0 0 0-.46-5.58z" /><polygon points="9.75 15.02 15.5 12 9.75 8.98 9.75 15.02" fill="white" /></svg>
-                </a>
-              </div>
             </div>
           </div>
 
