@@ -3,7 +3,12 @@ import { GrafikUsia, GrafikPie, GrafikPertumbuhan, GrafikStunting, GrafikBarHori
 
 export const dynamic = 'force-dynamic';
 
-const rwPlaceholder: any[] = [];
+const rwPlaceholder: any[] = [
+  { rw: 'RW I', jumlah_kk: 295, laki_laki: 485, perempuan: 470 },
+  { rw: 'RW II', jumlah_kk: 310, laki_laki: 505, perempuan: 490 },
+  { rw: 'RW III', jumlah_kk: 288, laki_laki: 472, perempuan: 453 },
+  { rw: 'RW IV', jumlah_kk: 235, laki_laki: 425, perempuan: 400 },
+];
 const usiaPlaceholder: any[] = [];
 
 export default async function KependudukanPage() {

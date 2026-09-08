@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { supabase, getProfil, getPotensiUnggulan, getStatistikRW } from "@/lib/supabaseClient";
+import { supabase, getProfil, getPotensiUnggulan, getStatistikRW, getStrukturRWRT } from "@/lib/supabaseClient";
 import HeroSlider from "@/components/HeroSlider";
 import PotensiSectionClient from "@/components/PotensiSectionClient";
 
@@ -7,31 +7,20 @@ import PotensiSectionClient from "@/components/PotensiSectionClient";
 export const dynamic = 'force-dynamic';
 
 const rwPlaceholder = [
-  { rw: 'RW 01', jumlah_kk: 120, laki_laki: 230, perempuan: 215 },
-  { rw: 'RW 02', jumlah_kk: 95, laki_laki: 185, perempuan: 178 },
-  { rw: 'RW 03', jumlah_kk: 140, laki_laki: 270, perempuan: 260 },
-  { rw: 'RW 04', jumlah_kk: 80, laki_laki: 160, perempuan: 155 },
+  { rw: 'RW I', jumlah_kk: 295, laki_laki: 485, perempuan: 470 },
+  { rw: 'RW II', jumlah_kk: 310, laki_laki: 505, perempuan: 490 },
+  { rw: 'RW III', jumlah_kk: 288, laki_laki: 472, perempuan: 453 },
+  { rw: 'RW IV', jumlah_kk: 235, laki_laki: 425, perempuan: 400 },
 ];
 
-// Fetch stats dynamically from kependudukan_rw table (same source as /kependudukan)
+// Fetch stats dynamically from kependudukan_rw table & getStrukturRWRT (same source as /kependudukan)
 async function getStats() {
   const rawRW = await getStatistikRW();
+  const rawStruktur = await getStrukturRWRT();
 
   let effectiveRW = rwPlaceholder;
   if (rawRW && rawRW.length > 0) {
-    const dbMap = new Map(
-      rawRW.map((item: any) => [item.rw.toLowerCase().replace(/\s+/g, ''), item])
-    );
-    effectiveRW = rwPlaceholder.map((p) => {
-      const key = p.rw.toLowerCase().replace(/\s+/g, '');
-      return dbMap.get(key) || p;
-    });
-    rawRW.forEach((item: any) => {
-      const key = item.rw.toLowerCase().replace(/\s+/g, '');
-      if (!rwPlaceholder.some(p => p.rw.toLowerCase().replace(/\s+/g, '') === key)) {
-        effectiveRW.push(item);
-      }
-    });
+    effectiveRW = rawRW;
   }
 
   const totalLaki = effectiveRW.reduce((sum: number, item: any) => sum + (item.laki_laki ?? item.laki ?? 0), 0);
@@ -39,13 +28,10 @@ async function getStats() {
   const totalPenduduk = totalLaki + totalPerempuan;
   const totalKK = effectiveRW.reduce((sum: number, item: any) => sum + (item.jumlah_kk ?? item.jumlah ?? 0), 0);
   const totalRW = effectiveRW.length;
-  const totalRT = effectiveRW.reduce((sum: number, item: any) => {
-    if (item.rt) {
-      const parts = item.rt.split(/[,;\n]+/).filter(Boolean);
-      return sum + (parts.length || 1);
-    }
-    return sum + 2;
-  }, 0);
+  
+  const totalRT = rawStruktur && rawStruktur.length > 0
+    ? rawStruktur.reduce((acc: number, item: any) => acc + (item.rt_list?.length || 0), 0)
+    : 14;
 
   return { totalPenduduk, totalLaki, totalPerempuan, totalKK, totalRW, totalRT };
 }
