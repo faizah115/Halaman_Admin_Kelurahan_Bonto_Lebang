@@ -1,21 +1,14 @@
-import { getStatistikRW, getStatistikUsia, getMataPencaharian, getPertumbuhanPenduduk, getStatistikAgama, getStunting, getStatistikPendidikan, getStatistikPerkawinan, getDataUmum, getStrukturRWRT, getPetugasKontakData, getMutasiBulanan } from '@/lib/supabaseClient';
+import { getStatistikUsia, getMataPencaharian, getPertumbuhanPenduduk, getStatistikAgama, getStunting, getStatistikPendidikan, getStatistikPerkawinan, getDataUmum, getStrukturRWRT, getPetugasKontakData, getMutasiBulanan } from '@/lib/supabaseClient';
 import { GrafikUsia, GrafikPie, GrafikPertumbuhan, GrafikStunting, GrafikBarHorizontal, GrafikMataPencaharian, GrafikAgama, GrafikPerkawinan, GrafikPendidikan } from './GrafikKependudukan';
 
 export const dynamic = 'force-dynamic';
 
-const rwPlaceholder: any[] = [
-  { rw: 'RW I', jumlah_kk: 295, laki_laki: 485, perempuan: 470 },
-  { rw: 'RW II', jumlah_kk: 310, laki_laki: 505, perempuan: 490 },
-  { rw: 'RW III', jumlah_kk: 288, laki_laki: 472, perempuan: 453 },
-  { rw: 'RW IV', jumlah_kk: 235, laki_laki: 425, perempuan: 400 },
-];
 const usiaPlaceholder: any[] = [];
 
 export default async function KependudukanPage() {
   const { petugas: dataPetugas, tpk: dataTPK, mbg: dataMBG } = await getPetugasKontakData();
   const dataStrukturRW = await getStrukturRWRT();
   const dataUmum = await getDataUmum();
-  const rawRW = await getStatistikRW();
   const rawUsia = await getStatistikUsia();
   const rawMata = await getMataPencaharian();
   const rawPertumbuhan = await getPertumbuhanPenduduk();
@@ -25,7 +18,6 @@ export default async function KependudukanPage() {
   const rawPerkawinan = await getStatistikPerkawinan();
   const rawMutasi = await getMutasiBulanan();
 
-  const dataRW = (rawRW && rawRW.length > 0) ? rawRW : rwPlaceholder;
   const dataUsia = (rawUsia && rawUsia.length > 0) ? rawUsia : usiaPlaceholder;
 
   const mataPencaharianPlaceholder: any[] = [];
@@ -43,13 +35,7 @@ export default async function KependudukanPage() {
   const dataPerkawinan = (rawPerkawinan && rawPerkawinan.length > 0) ? rawPerkawinan : perkawinanPlaceholder;
 
   // Check if any kependudukan data exists
-  const hasData = (dataPetugas && dataPetugas.length > 0) || (dataStrukturRW && dataStrukturRW.length > 0) || (dataUmum && dataUmum.length > 0) || dataRW.length > 0 || dataUsia.length > 0 || dataMata.length > 0 || dataPertumbuhan.length > 0 || dataAgama.length > 0 || dataStunting.length > 0 || dataPendidikan.length > 0 || dataPerkawinan.length > 0;
-
-  // Hitung Ringkasan Total
-  const totalKK = dataRW.reduce((s: number, d: { jumlah_kk: number }) => s + d.jumlah_kk, 0);
-  const totalLaki = dataRW.reduce((s: number, d: { laki_laki: number }) => s + d.laki_laki, 0);
-  const totalPerempuan = dataRW.reduce((s: number, d: { perempuan: number }) => s + d.perempuan, 0);
-  const totalPenduduk = totalLaki + totalPerempuan;
+  const hasData = (dataPetugas && dataPetugas.length > 0) || (dataStrukturRW && dataStrukturRW.length > 0) || (dataUmum && dataUmum.length > 0) || dataUsia.length > 0 || dataMata.length > 0 || dataPertumbuhan.length > 0 || dataAgama.length > 0 || dataStunting.length > 0 || dataPendidikan.length > 0 || dataPerkawinan.length > 0 || (rawMutasi && rawMutasi.length > 0);
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pb-20">
@@ -261,26 +247,6 @@ export default async function KependudukanPage() {
                           {item.jumlah}
                         </p>
                       </div>
-                    </div>
-                  ))}
-                </div>
-              </section>
-            )}
-            {dataRW.length > 0 && (
-              <section>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-5">
-                  {[
-                    { label: 'Total Penduduk', value: totalPenduduk, icon: '', textColor: 'text-[#7a1f2b] dark:text-red-400' },
-                    { label: 'Jumlah KK', value: totalKK, icon: '', textColor: 'text-[#c9a227] dark:text-amber-400' },
-                    { label: 'Laki-laki', value: totalLaki, icon: '', textColor: 'text-[#7a1f2b] dark:text-red-400' },
-                    { label: 'Perempuan', value: totalPerempuan, icon: '', textColor: 'text-[#e8748a] dark:text-pink-400' },
-                  ].map(({ label, value, icon, textColor }) => (
-                    <div key={label} className="bg-white dark:bg-gray-800 rounded-2xl shadow p-6 text-center hover:shadow-md transition border border-gray-100 dark:border-gray-700">
-                      <span className="text-4xl">{icon}</span>
-                      <p className={`text-3xl font-extrabold mt-2 ${textColor}`}>
-                        {value.toLocaleString('id-ID')}
-                      </p>
-                      <p className="text-gray-600 dark:text-gray-400 text-sm font-medium mt-1">{label}</p>
                     </div>
                   ))}
                 </div>
