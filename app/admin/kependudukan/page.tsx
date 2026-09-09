@@ -3,17 +3,6 @@
 import { useState, useEffect } from 'react';
 import { supabase, getMataPencaharian, getStatistikAgama, getProfil } from '@/lib/supabaseClient';
 
-type RWItem = {
-  id: number;
-  rw: string;
-  rt?: string | null;
-  jumlah_kk?: number;
-  jumlah?: number;
-  laki_laki?: number;
-  laki?: number;
-  perempuan: number;
-};
-
 type UsiaItem = {
   id: number;
   urutan: number;
@@ -56,11 +45,10 @@ type JsonStatItem = {
 };
 
 export default function AdminKependudukanPage() {
-  const [activeTab, setActiveTab] = useState<'rw' | 'usia' | 'mata' | 'pertumbuhan' | 'agama' | 'stunting' | 'pendidikan' | 'perkawinan'>('usia');
+  const [activeTab, setActiveTab] = useState<'usia' | 'mata' | 'pertumbuhan' | 'agama' | 'stunting' | 'pendidikan' | 'perkawinan'>('usia');
   const [loading, setLoading] = useState(true);
 
   // Data states
-  const [rwList, setRwList] = useState<RWItem[]>([]);
   const [usiaList, setUsiaList] = useState<UsiaItem[]>([]);
   const [mataList, setMataList] = useState<MataPencaharianItem[]>([]);
   const [pertumbuhanList, setPertumbuhanList] = useState<PertumbuhanItem[]>([]);
@@ -81,15 +69,6 @@ export default function AdminKependudukanPage() {
   const [namaPerkawinan, setNamaPerkawinan] = useState('');
   const [jumlahPerkawinan, setJumlahPerkawinan] = useState(0);
 
-
-  // Modals & Form States
-  const [showRWModal, setShowRWModal] = useState(false);
-  const [editRW, setEditRW] = useState<RWItem | null>(null);
-  const [rwName, setRwName] = useState('');
-  const [rtName, setRtName] = useState('');
-  const [jumlahKK, setJumlahKK] = useState(0);
-  const [lakiLaki, setLakiLaki] = useState(0);
-  const [perempuan, setPerempuan] = useState(0);
 
   const [showUsiaModal, setShowUsiaModal] = useState(false);
   const [editUsia, setEditUsia] = useState<UsiaItem | null>(null);
@@ -128,18 +107,6 @@ export default function AdminKependudukanPage() {
 
   const fetchAllData = async () => {
     setLoading(true);
-
-    const { data: rwData } = await supabase.from('kependudukan_rw').select('*').order('rw', { ascending: true });
-    if (rwData && rwData.length > 0) {
-      setRwList(rwData.map((item: any) => ({
-        ...item,
-        jumlah_kk: item.jumlah ?? item.jumlah_kk ?? 0,
-        laki_laki: item.laki ?? item.laki_laki ?? 0,
-        perempuan: item.perempuan ?? 0,
-      })));
-    } else {
-      setRwList([]);
-    }
 
     const { data: usiaData } = await supabase.from('kependudukan_usia').select('*').order('urutan', { ascending: true });
     if (usiaData && usiaData.length > 0) {
@@ -205,60 +172,6 @@ export default function AdminKependudukanPage() {
     }
 
     setLoading(false);
-  };
-
-  // ─── HANDLERS RW ────────────────────────────────────────────────────────────
-  const handleOpenRWModal = (item?: RWItem) => {
-    if (item) {
-      setEditRW(item);
-      setRwName(item.rw);
-      setRtName(item.rt || '');
-      setJumlahKK(item.jumlah ?? item.jumlah_kk ?? 0);
-      setLakiLaki(item.laki ?? item.laki_laki ?? 0);
-      setPerempuan(item.perempuan || 0);
-    } else {
-      setEditRW(null);
-      setRwName('RW 0' + (rwList.length + 1));
-      setRtName('');
-      setJumlahKK(0);
-      setLakiLaki(0);
-      setPerempuan(0);
-    }
-    setShowRWModal(true);
-  };
-
-  const handleSaveRW = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setSubmitting(true);
-    const payload = { rw: rwName, rt: rtName || null, laki: lakiLaki, perempuan: perempuan, jumlah: jumlahKK };
-
-    if (editRW && editRW.id > 0) {
-      const { data, error } = await supabase.from('kependudukan_rw').update(payload).eq('id', editRW.id).select();
-      if (error) {
-        alert('Gagal update RW: ' + error.message);
-      } else if (!data || data.length === 0) {
-        const { error: insertErr } = await supabase.from('kependudukan_rw').insert([payload]);
-        if (insertErr) alert('Gagal simpan RW: ' + insertErr.message);
-        else { fetchAllData(); setShowRWModal(false); }
-      } else {
-        fetchAllData();
-        setShowRWModal(false);
-      }
-    } else {
-      const { error } = await supabase.from('kependudukan_rw').insert([payload]);
-      if (error) alert('Gagal tambah RW: ' + error.message);
-      else { fetchAllData(); setShowRWModal(false); }
-    }
-    setSubmitting(false);
-  };
-
-  const handleDeleteRW = async (id: number) => {
-    if (!confirm('Apakah Anda yakin ingin menghapus data RW ini?')) return;
-    if (id > 0) {
-      const { error } = await supabase.from('kependudukan_rw').delete().eq('id', id);
-      if (error) alert('Gagal hapus RW: ' + error.message);
-    }
-    fetchAllData();
   };
 
   // ─── HANDLERS KELOMPOK USIA ──────────────────────────────────────────────────
@@ -602,15 +515,14 @@ export default function AdminKependudukanPage() {
         <div>
           <h1 className="text-2xl font-bold text-gray-800 dark:text-white">Kelola Data Kependudukan & Statistik</h1>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
-            Kelola 6 kategori data kependudukan (RW, Usia, Mata Pencaharian, Pertumbuhan, Agama, & Stunting).
+            Kelola 7 kategori data kependudukan (Usia, Mata Pencaharian, Pertumbuhan, Agama, Stunting, Pendidikan, & Perkawinan).
           </p>
         </div>
       </div>
 
-      {/* Tabs Menu (8 Tabs) */}
+      {/* Tabs Menu (7 Tabs) */}
       <div className="flex overflow-x-auto border-b border-gray-200 dark:border-gray-700 mb-6 gap-2 pb-1">
         {[
-          { key: 'rw', label: 'Penduduk per RW', icon: '' },
           { key: 'usia', label: 'Kelompok Usia', icon: '' },
           { key: 'mata', label: 'Mata Pencaharian', icon: '' },
           { key: 'pertumbuhan', label: 'Pertumbuhan', icon: '' },
@@ -633,57 +545,7 @@ export default function AdminKependudukanPage() {
         ))}
       </div>
 
-      {/* TAB 1: DATA RW */}
-      {activeTab === 'rw' && (
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="font-bold text-lg text-gray-800 dark:text-white">Daftar Statistik per RW</h2>
-            <button
-              onClick={() => handleOpenRWModal()}
-              className="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold px-3 py-2 rounded-xl transition"
-            >
-              ➕ Tambah RW
-            </button>
-          </div>
 
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm text-left">
-              <thead className="bg-gray-50 dark:bg-gray-750 text-gray-700 dark:text-gray-300 font-semibold border-b border-gray-200 dark:border-gray-700">
-                <tr>
-                  <th className="px-4 py-3">RW</th>
-                  <th className="px-4 py-3">RT</th>
-                  <th className="px-4 py-3 text-right">Jumlah KK</th>
-                  <th className="px-4 py-3 text-right">Laki-laki</th>
-                  <th className="px-4 py-3 text-right">Perempuan</th>
-                  <th className="px-4 py-3 text-right">Total Jiwa</th>
-                  <th className="px-4 py-3 text-right">Aksi</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
-                {rwList.map((item: any) => {
-                  const lakiVal = item.laki ?? item.laki_laki ?? 0;
-                  const kkVal = item.jumlah ?? item.jumlah_kk ?? 0;
-                  const totalJiwa = lakiVal + (item.perempuan || 0);
-                  return (
-                    <tr key={item.id}>
-                      <td className="px-4 py-3 font-bold text-indigo-600 dark:text-indigo-400">{item.rw}</td>
-                      <td className="px-4 py-3 text-gray-500">{item.rt || '-'}</td>
-                      <td className="px-4 py-3 text-right">{kkVal}</td>
-                      <td className="px-4 py-3 text-right text-blue-600">{lakiVal}</td>
-                      <td className="px-4 py-3 text-right text-pink-600">{item.perempuan || 0}</td>
-                      <td className="px-4 py-3 text-right font-bold">{totalJiwa}</td>
-                      <td className="px-4 py-3 text-right space-x-2">
-                        <button onClick={() => handleOpenRWModal(item)} className="text-xs text-amber-600 hover:underline">Edit</button>
-                        <button onClick={() => handleDeleteRW(item.id)} className="text-xs text-rose-600 hover:underline">Hapus</button>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
 
       {/* TAB 2: KELOMPOK USIA */}
       {activeTab === 'usia' && (
@@ -968,42 +830,7 @@ export default function AdminKependudukanPage() {
         </div>
       )}
 
-      {/* MODAL RW */}
-      {showRWModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-          <div className="bg-white dark:bg-gray-800 rounded-2xl max-w-md w-full p-6 shadow-2xl">
-            <h3 className="font-bold text-lg mb-4 text-gray-800 dark:text-white">{editRW ? 'Edit Data RW' : 'Tambah Data RW'}</h3>
-            <form onSubmit={handleSaveRW} className="space-y-3">
-              <div>
-                <label className="text-xs font-semibold">Nama RW</label>
-                <input type="text" required value={rwName} onChange={(e) => setRwName(e.target.value)} className="w-full p-2 border rounded-xl dark:bg-gray-700 text-sm" placeholder="RW 01" />
-              </div>
-              <div>
-                <label className="text-xs font-semibold">Cakupan RT (Opsional)</label>
-                <input type="text" value={rtName} onChange={(e) => setRtName(e.target.value)} className="w-full p-2 border rounded-xl dark:bg-gray-700 text-sm" placeholder="RT 01 - RT 04" />
-              </div>
-              <div className="grid grid-cols-3 gap-2">
-                <div>
-                  <label className="text-xs font-semibold">Jumlah KK</label>
-                  <input type="number" required value={jumlahKK} onChange={(e) => setJumlahKK(Number(e.target.value))} className="w-full p-2 border rounded-xl dark:bg-gray-700 text-sm" />
-                </div>
-                <div>
-                  <label className="text-xs font-semibold">Laki-laki</label>
-                  <input type="number" required value={lakiLaki} onChange={(e) => setLakiLaki(Number(e.target.value))} className="w-full p-2 border rounded-xl dark:bg-gray-700 text-sm" />
-                </div>
-                <div>
-                  <label className="text-xs font-semibold">Perempuan</label>
-                  <input type="number" required value={perempuan} onChange={(e) => setPerempuan(Number(e.target.value))} className="w-full p-2 border rounded-xl dark:bg-gray-700 text-sm" />
-                </div>
-              </div>
-              <div className="flex justify-end gap-2 pt-3">
-                <button type="button" onClick={() => setShowRWModal(false)} className="px-3 py-1.5 bg-gray-100 text-xs rounded-xl">Batal</button>
-                <button type="submit" disabled={submitting} className="px-4 py-1.5 bg-indigo-600 text-white text-xs font-semibold rounded-xl">Simpan</button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+
 
       {/* MODAL USIA */}
       {showUsiaModal && (

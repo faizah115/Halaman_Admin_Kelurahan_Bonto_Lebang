@@ -28,7 +28,7 @@ export default function AdminDashboardPage() {
         {[
           { label: 'Kelola Profil & Lurah', icon: '🏛️', link: '/admin/profil', desc: 'Atur info kelurahan, sambutan & foto lurah' },
           { label: 'Potensi Unggulan', icon: '🏆', link: '/admin/potensi', desc: 'Kelola sektor potensi unggulan desa' },
-          { label: 'Data Kependudukan', icon: '👨‍👩‍👧‍👦', link: '/admin/kependudukan', desc: 'Statistik RW, Usia, & Stunting' },
+          { label: 'Data Kependudukan', icon: '👨‍👩‍👧‍👦', link: '/admin/kependudukan', desc: 'Statistik Usia, Demografi, & Stunting' },
           { label: 'Kelola Berita', icon: '📰', link: '/admin/berita', desc: 'Tambah atau edit pengumuman resmi' },
           { label: 'Kelola UMKM', icon: '🛍️', link: '/admin/umkm', desc: 'Katalog etalase produk warga' },
           { label: 'Kelola Galeri', icon: '🖼️', link: '/admin/galeri', desc: 'Dokumentasi foto kegiatan' },
