@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { supabase, getMataPencaharian, getStatistikAgama, getProfil } from '@/lib/supabaseClient';
+import { supabase, getMataPencaharian, getStatistikAgama, getProfil, getStrukturRWRT, getDataUmum, getMutasiBulanan } from '@/lib/supabaseClient';
 
 type UsiaItem = {
   id: number;
@@ -44,8 +44,40 @@ type JsonStatItem = {
   value: number;
 };
 
+type DataUmumItem = {
+  id: number;
+  keterangan: string;
+  jumlah: string;
+  icon?: string;
+};
+
+type RTItem = {
+  rt: string;
+  ketua_rt: string;
+};
+
+type RWItem = {
+  rw: string;
+  ketua_rw: string;
+  rt_list: RTItem[];
+};
+
+type MutasiBulanan = {
+  bulan: string;
+  tahun: number;
+  periode: string;
+  luas_wilayah: string;
+  jumlah_kk: number;
+  awal_bulan: { laki_laki: number; perempuan: number; total: number };
+  kelahiran: { laki_laki: number; perempuan: number; total: number };
+  kematian: { laki_laki: number; perempuan: number; total: number };
+  pendatang: { laki_laki: number; perempuan: number; total: number };
+  pindah: { laki_laki: number; perempuan: number; total: number };
+  akhir_bulan: { laki_laki: number; perempuan: number; total: number };
+};
+
 export default function AdminKependudukanPage() {
-  const [activeTab, setActiveTab] = useState<'usia' | 'mata' | 'pertumbuhan' | 'agama' | 'stunting' | 'pendidikan' | 'perkawinan'>('usia');
+  const [activeTab, setActiveTab] = useState<'rwrt' | 'dataUmum' | 'usia' | 'mata' | 'pertumbuhan' | 'agama' | 'stunting' | 'pendidikan' | 'perkawinan' | 'mutasi'>('rwrt');
   const [loading, setLoading] = useState(true);
 
   // Data states
@@ -56,6 +88,9 @@ export default function AdminKependudukanPage() {
   const [stuntingList, setStuntingList] = useState<StuntingItem[]>([]);
   const [pendidikanList, setPendidikanList] = useState<JsonStatItem[]>([]);
   const [perkawinanList, setPerkawinanList] = useState<JsonStatItem[]>([]);
+  const [rwrtList, setRwrtList] = useState<RWItem[]>([]);
+  const [dataUmumList, setDataUmumList] = useState<DataUmumItem[]>([]);
+  const [mutasiList, setMutasiList] = useState<MutasiBulanan[]>([]);
   const [profilId, setProfilId] = useState<number | null>(null);
   const [rawMeta, setRawMeta] = useState<any>({});
 
@@ -100,6 +135,38 @@ export default function AdminKependudukanPage() {
   const [jumlahNormal, setJumlahNormal] = useState(0);
 
   const [submitting, setSubmitting] = useState(false);
+
+  // ─── MODAL DATA UMUM ──────────────────────────────────────────────────────────
+  const [showDataUmumModal, setShowDataUmumModal] = useState(false);
+  const [editDataUmum, setEditDataUmum] = useState<DataUmumItem | null>(null);
+  const [duKeterangan, setDuKeterangan] = useState('');
+  const [duJumlah, setDuJumlah] = useState('');
+  const [duIcon, setDuIcon] = useState('📍');
+
+  // ─── MODAL RW/RT ──────────────────────────────────────────────────────────────
+  const [showRwModal, setShowRwModal] = useState(false);
+  const [editRwIdx, setEditRwIdx] = useState<number | null>(null);
+  const [rwNama, setRwNama] = useState('');
+  const [rwKetua, setRwKetua] = useState('');
+  const [rwRtListStr, setRwRtListStr] = useState('');
+
+  // ─── MODAL MUTASI ──────────────────────────────────────────────────────────────
+  const [showMutasiModal, setShowMutasiModal] = useState(false);
+  const [editMutasiIdx, setEditMutasiIdx] = useState<number | null>(null);
+  const [mutBulan, setMutBulan] = useState('Januari');
+  const [mutTahun, setMutTahun] = useState(new Date().getFullYear());
+  const [mutLuas, setMutLuas] = useState('');
+  const [mutKk, setMutKk] = useState(0);
+  const [mutAwalL, setMutAwalL] = useState(0);
+  const [mutAwalP, setMutAwalP] = useState(0);
+  const [mutLahirL, setMutLahirL] = useState(0);
+  const [mutLahirP, setMutLahirP] = useState(0);
+  const [mutMatiL, setMutMatiL] = useState(0);
+  const [mutMatiP, setMutMatiP] = useState(0);
+  const [mutDatangL, setMutDatangL] = useState(0);
+  const [mutDatangP, setMutDatangP] = useState(0);
+  const [mutPindahL, setMutPindahL] = useState(0);
+  const [mutPindahP, setMutPindahP] = useState(0);
 
   useEffect(() => {
     fetchAllData();
@@ -171,7 +238,177 @@ export default function AdminKependudukanPage() {
       setPerkawinanList([]);
     }
 
+    const rwData = await getStrukturRWRT();
+    setRwrtList(Array.isArray(rwData) ? rwData : []);
+
+    const umum = await getDataUmum();
+    setDataUmumList(Array.isArray(umum) ? umum : []);
+
+    const mutasi = await getMutasiBulanan();
+    setMutasiList(Array.isArray(mutasi) ? mutasi : []);
+
     setLoading(false);
+  };
+
+  // ─── SAVE PROFIL JSON (helper) ───────────────────────────────────────────────
+  const saveProfilJson = async (field: string, value: any) => {
+    setSubmitting(true);
+    if (profilId) {
+      const { error } = await supabase.from('profil').update({ [field]: value }).eq('id', profilId);
+      if (error) alert('Gagal menyimpan: ' + error.message);
+      else fetchAllData();
+    } else {
+      alert('Data profil belum tersedia. Harap isi profil terlebih dahulu.');
+    }
+    setSubmitting(false);
+  };
+
+  // ─── HANDLERS DATA UMUM ──────────────────────────────────────────────────────
+  const handleOpenDataUmumModal = (item?: DataUmumItem) => {
+    if (item) {
+      setEditDataUmum(item);
+      setDuKeterangan(item.keterangan);
+      setDuJumlah(item.jumlah);
+      setDuIcon(item.icon || '📍');
+    } else {
+      setEditDataUmum(null);
+      setDuKeterangan('');
+      setDuJumlah('');
+      setDuIcon('📍');
+    }
+    setShowDataUmumModal(true);
+  };
+
+  const handleSaveDataUmum = async (e: React.FormEvent) => {
+    e.preventDefault();
+    let updated: DataUmumItem[];
+    if (editDataUmum) {
+      updated = dataUmumList.map((d) => d.id === editDataUmum.id ? { ...d, keterangan: duKeterangan, jumlah: duJumlah, icon: duIcon } : d);
+    } else {
+      const newId = dataUmumList.length > 0 ? Math.max(...dataUmumList.map(d => d.id)) + 1 : 1;
+      updated = [...dataUmumList, { id: newId, keterangan: duKeterangan, jumlah: duJumlah, icon: duIcon }];
+    }
+    await saveProfilJson('data_umum', updated);
+    setShowDataUmumModal(false);
+  };
+
+  const handleDeleteDataUmum = async (id: number) => {
+    if (!confirm('Hapus data umum ini?')) return;
+    const updated = dataUmumList.filter(d => d.id !== id);
+    await saveProfilJson('data_umum', updated);
+  };
+
+  // ─── HANDLERS RW/RT ──────────────────────────────────────────────────────────
+  const handleOpenRwModal = (idx?: number) => {
+    if (idx !== undefined) {
+      const item = rwrtList[idx];
+      setEditRwIdx(idx);
+      setRwNama(item.rw);
+      setRwKetua(item.ketua_rw);
+      setRwRtListStr(item.rt_list.map(rt => `${rt.rt}:${rt.ketua_rt}`).join('\n'));
+    } else {
+      setEditRwIdx(null);
+      setRwNama('');
+      setRwKetua('');
+      setRwRtListStr('');
+    }
+    setShowRwModal(true);
+  };
+
+  const handleSaveRw = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const rt_list = rwRtListStr
+      .split('\n')
+      .map(line => line.trim())
+      .filter(Boolean)
+      .map(line => {
+        const [rt, ...rest] = line.split(':');
+        return { rt: rt.trim(), ketua_rt: rest.join(':').trim() };
+      });
+    const newItem: RWItem = { rw: rwNama, ketua_rw: rwKetua, rt_list };
+    let updated: RWItem[];
+    if (editRwIdx !== null) {
+      updated = rwrtList.map((r, i) => i === editRwIdx ? newItem : r);
+    } else {
+      updated = [...rwrtList, newItem];
+    }
+    await saveProfilJson('struktur_rw', updated);
+    setShowRwModal(false);
+  };
+
+  const handleDeleteRw = async (idx: number) => {
+    if (!confirm('Hapus data RW ini beserta seluruh RT-nya?')) return;
+    const updated = rwrtList.filter((_, i) => i !== idx);
+    await saveProfilJson('struktur_rw', updated);
+  };
+
+  // ─── HANDLERS MUTASI BULANAN ─────────────────────────────────────────────────
+  const BULAN_LIST = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+
+  const handleOpenMutasiModal = (idx?: number) => {
+    if (idx !== undefined) {
+      const m = mutasiList[idx];
+      setEditMutasiIdx(idx);
+      setMutBulan(m.bulan);
+      setMutTahun(m.tahun);
+      setMutLuas(m.luas_wilayah);
+      setMutKk(m.jumlah_kk);
+      setMutAwalL(m.awal_bulan.laki_laki);
+      setMutAwalP(m.awal_bulan.perempuan);
+      setMutLahirL(m.kelahiran.laki_laki);
+      setMutLahirP(m.kelahiran.perempuan);
+      setMutMatiL(m.kematian.laki_laki);
+      setMutMatiP(m.kematian.perempuan);
+      setMutDatangL(m.pendatang.laki_laki);
+      setMutDatangP(m.pendatang.perempuan);
+      setMutPindahL(m.pindah.laki_laki);
+      setMutPindahP(m.pindah.perempuan);
+    } else {
+      setEditMutasiIdx(null);
+      setMutBulan('Januari');
+      setMutTahun(new Date().getFullYear());
+      setMutLuas('');
+      setMutKk(0);
+      setMutAwalL(0); setMutAwalP(0);
+      setMutLahirL(0); setMutLahirP(0);
+      setMutMatiL(0); setMutMatiP(0);
+      setMutDatangL(0); setMutDatangP(0);
+      setMutPindahL(0); setMutPindahP(0);
+    }
+    setShowMutasiModal(true);
+  };
+
+  const handleSaveMutasi = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const akhirL = mutAwalL + mutLahirL + mutDatangL - mutMatiL - mutPindahL;
+    const akhirP = mutAwalP + mutLahirP + mutDatangP - mutMatiP - mutPindahP;
+    const newItem: MutasiBulanan = {
+      bulan: mutBulan,
+      tahun: mutTahun,
+      periode: `${mutBulan} ${mutTahun}`,
+      luas_wilayah: mutLuas,
+      jumlah_kk: mutKk,
+      awal_bulan: { laki_laki: mutAwalL, perempuan: mutAwalP, total: mutAwalL + mutAwalP },
+      kelahiran: { laki_laki: mutLahirL, perempuan: mutLahirP, total: mutLahirL + mutLahirP },
+      kematian: { laki_laki: mutMatiL, perempuan: mutMatiP, total: mutMatiL + mutMatiP },
+      pendatang: { laki_laki: mutDatangL, perempuan: mutDatangP, total: mutDatangL + mutDatangP },
+      pindah: { laki_laki: mutPindahL, perempuan: mutPindahP, total: mutPindahL + mutPindahP },
+      akhir_bulan: { laki_laki: akhirL, perempuan: akhirP, total: akhirL + akhirP },
+    };
+    let updated: MutasiBulanan[];
+    if (editMutasiIdx !== null) {
+      updated = mutasiList.map((m, i) => i === editMutasiIdx ? newItem : m);
+    } else {
+      updated = [...mutasiList, newItem];
+    }
+    await saveProfilJson('mutasi_bulanan', updated);
+    setShowMutasiModal(false);
+  };
+
+  const handleDeleteMutasi = async (idx: number) => {
+    if (!confirm('Hapus data mutasi bulan ini?')) return;
+    const updated = mutasiList.filter((_, i) => i !== idx);
+    await saveProfilJson('mutasi_bulanan', updated);
   };
 
   // ─── HANDLERS KELOMPOK USIA ──────────────────────────────────────────────────
@@ -515,21 +752,24 @@ export default function AdminKependudukanPage() {
         <div>
           <h1 className="text-2xl font-bold text-gray-800 dark:text-white">Kelola Data Kependudukan & Statistik</h1>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
-            Kelola 7 kategori data kependudukan (Usia, Mata Pencaharian, Pertumbuhan, Agama, Stunting, Pendidikan, & Perkawinan).
+            Kelola 10 kategori data kependudukan: Struktur RW/RT, Data Umum, Usia, Mata Pencaharian, Pertumbuhan, Agama, Stunting, Pendidikan, Perkawinan & Mutasi Bulanan.
           </p>
         </div>
       </div>
 
-      {/* Tabs Menu (7 Tabs) */}
+      {/* Tabs Menu (10 Tabs) */}
       <div className="flex overflow-x-auto border-b border-gray-200 dark:border-gray-700 mb-6 gap-2 pb-1">
         {[
-          { key: 'usia', label: 'Kelompok Usia', icon: '' },
-          { key: 'mata', label: 'Mata Pencaharian', icon: '' },
-          { key: 'pertumbuhan', label: 'Pertumbuhan', icon: '' },
-          { key: 'agama', label: 'Agama', icon: '' },
-          { key: 'stunting', label: 'Stunting Balita', icon: '' },
-          { key: 'pendidikan', label: 'Pendidikan', icon: '' },
-          { key: 'perkawinan', label: 'Perkawinan', icon: '' },
+          { key: 'rwrt', label: 'Struktur RW/RT', icon: '🏠' },
+          { key: 'dataUmum', label: 'Data Umum', icon: '📍' },
+          { key: 'usia', label: 'Kelompok Usia', icon: '👤' },
+          { key: 'mata', label: 'Mata Pencaharian', icon: '💼' },
+          { key: 'pertumbuhan', label: 'Pertumbuhan', icon: '📈' },
+          { key: 'agama', label: 'Agama', icon: '🕌' },
+          { key: 'stunting', label: 'Stunting Balita', icon: '🍼' },
+          { key: 'pendidikan', label: 'Pendidikan', icon: '📚' },
+          { key: 'perkawinan', label: 'Perkawinan', icon: '💍' },
+          { key: 'mutasi', label: 'Mutasi Bulanan', icon: '📋' },
         ].map((tab) => (
           <button
             key={tab.key}
@@ -546,6 +786,86 @@ export default function AdminKependudukanPage() {
       </div>
 
 
+
+      {/* TAB: STRUKTUR RW/RT */}
+      {activeTab === 'rwrt' && (
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="font-bold text-lg text-gray-800 dark:text-white">Struktur Wilayah RW & RT</h2>
+            <button
+              onClick={() => handleOpenRwModal()}
+              className="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold px-3 py-2 rounded-xl transition"
+            >
+              ➕ Tambah RW
+            </button>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm text-left">
+              <thead className="bg-gray-50 dark:bg-gray-700/50 text-gray-700 dark:text-gray-300 font-semibold border-b border-gray-200 dark:border-gray-700">
+                <tr>
+                  <th className="px-4 py-3">RW</th>
+                  <th className="px-4 py-3">Ketua RW</th>
+                  <th className="px-4 py-3">Jumlah RT</th>
+                  <th className="px-4 py-3 text-right">Aksi</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
+                {rwrtList.map((item, idx) => (
+                  <tr key={idx}>
+                    <td className="px-4 py-3 font-bold text-gray-800 dark:text-white">{item.rw}</td>
+                    <td className="px-4 py-3 text-gray-700 dark:text-gray-300">{item.ketua_rw}</td>
+                    <td className="px-4 py-3 text-indigo-600 font-bold">{item.rt_list?.length ?? 0} RT</td>
+                    <td className="px-4 py-3 text-right space-x-2">
+                      <button onClick={() => handleOpenRwModal(idx)} className="text-xs text-amber-600 hover:underline">Edit</button>
+                      <button onClick={() => handleDeleteRw(idx)} className="text-xs text-rose-600 hover:underline">Hapus</button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* TAB: DATA UMUM WILAYAH */}
+      {activeTab === 'dataUmum' && (
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="font-bold text-lg text-gray-800 dark:text-white">Data Umum Wilayah</h2>
+            <button
+              onClick={() => handleOpenDataUmumModal()}
+              className="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold px-3 py-2 rounded-xl transition"
+            >
+              ➕ Tambah Data
+            </button>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm text-left">
+              <thead className="bg-gray-50 dark:bg-gray-700/50 text-gray-700 dark:text-gray-300 font-semibold border-b border-gray-200 dark:border-gray-700">
+                <tr>
+                  <th className="px-4 py-3">Icon</th>
+                  <th className="px-4 py-3">Keterangan</th>
+                  <th className="px-4 py-3">Nilai / Jumlah</th>
+                  <th className="px-4 py-3 text-right">Aksi</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
+                {dataUmumList.map((item) => (
+                  <tr key={item.id}>
+                    <td className="px-4 py-3 text-2xl">{item.icon}</td>
+                    <td className="px-4 py-3 font-bold text-gray-800 dark:text-white">{item.keterangan}</td>
+                    <td className="px-4 py-3 text-indigo-600 font-bold">{item.jumlah}</td>
+                    <td className="px-4 py-3 text-right space-x-2">
+                      <button onClick={() => handleOpenDataUmumModal(item)} className="text-xs text-amber-600 hover:underline">Edit</button>
+                      <button onClick={() => handleDeleteDataUmum(item.id)} className="text-xs text-rose-600 hover:underline">Hapus</button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
 
       {/* TAB 2: KELOMPOK USIA */}
       {activeTab === 'usia' && (
@@ -830,7 +1150,178 @@ export default function AdminKependudukanPage() {
         </div>
       )}
 
+      {/* TAB: MUTASI PENDUDUK BULANAN */}
+      {activeTab === 'mutasi' && (
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="font-bold text-lg text-gray-800 dark:text-white">Mutasi Penduduk Bulanan</h2>
+            <button
+              onClick={() => handleOpenMutasiModal()}
+              className="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold px-3 py-2 rounded-xl transition"
+            >
+              ➕ Tambah Data Bulan
+            </button>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm text-left">
+              <thead className="bg-gray-50 dark:bg-gray-700/50 text-gray-700 dark:text-gray-300 font-semibold border-b border-gray-200 dark:border-gray-700">
+                <tr>
+                  <th className="px-4 py-3">Periode</th>
+                  <th className="px-4 py-3 text-right">Awal Bulan</th>
+                  <th className="px-4 py-3 text-right">Lahir</th>
+                  <th className="px-4 py-3 text-right">Mati</th>
+                  <th className="px-4 py-3 text-right">Datang</th>
+                  <th className="px-4 py-3 text-right">Pindah</th>
+                  <th className="px-4 py-3 text-right">Akhir Bulan</th>
+                  <th className="px-4 py-3 text-right">Aksi</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
+                {mutasiList.map((m, idx) => (
+                  <tr key={idx}>
+                    <td className="px-4 py-3 font-bold text-gray-800 dark:text-white">{m.periode}</td>
+                    <td className="px-4 py-3 text-right text-blue-600">{m.awal_bulan.total.toLocaleString('id-ID')}</td>
+                    <td className="px-4 py-3 text-right text-emerald-600">+{m.kelahiran.total}</td>
+                    <td className="px-4 py-3 text-right text-rose-600">-{m.kematian.total}</td>
+                    <td className="px-4 py-3 text-right text-indigo-600">+{m.pendatang.total}</td>
+                    <td className="px-4 py-3 text-right text-amber-600">-{m.pindah.total}</td>
+                    <td className="px-4 py-3 text-right font-bold text-gray-900 dark:text-white">{m.akhir_bulan.total.toLocaleString('id-ID')}</td>
+                    <td className="px-4 py-3 text-right space-x-2">
+                      <button onClick={() => handleOpenMutasiModal(idx)} className="text-xs text-amber-600 hover:underline">Edit</button>
+                      <button onClick={() => handleDeleteMutasi(idx)} className="text-xs text-rose-600 hover:underline">Hapus</button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
 
+      {/* MODAL DATA UMUM */}
+      {showDataUmumModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl max-w-md w-full p-6 shadow-2xl">
+            <h3 className="font-bold text-lg mb-4 text-gray-800 dark:text-white">{editDataUmum ? 'Edit Data Umum' : 'Tambah Data Umum'}</h3>
+            <form onSubmit={handleSaveDataUmum} className="space-y-3">
+              <div>
+                <label className="text-xs font-semibold">Icon (emoji)</label>
+                <input type="text" value={duIcon} onChange={e => setDuIcon(e.target.value)} className="w-full p-2 border rounded-xl dark:bg-gray-700 text-sm" placeholder="📍" />
+              </div>
+              <div>
+                <label className="text-xs font-semibold">Keterangan</label>
+                <input type="text" required value={duKeterangan} onChange={e => setDuKeterangan(e.target.value)} className="w-full p-2 border rounded-xl dark:bg-gray-700 text-sm" placeholder="Contoh: Luas Wilayah" />
+              </div>
+              <div>
+                <label className="text-xs font-semibold">Nilai / Jumlah</label>
+                <input type="text" required value={duJumlah} onChange={e => setDuJumlah(e.target.value)} className="w-full p-2 border rounded-xl dark:bg-gray-700 text-sm" placeholder="Contoh: 301 Ha" />
+              </div>
+              <div className="flex justify-end gap-2 pt-3">
+                <button type="button" onClick={() => setShowDataUmumModal(false)} className="px-3 py-1.5 bg-gray-100 text-xs rounded-xl">Batal</button>
+                <button type="submit" disabled={submitting} className="px-4 py-1.5 bg-indigo-600 text-white text-xs font-semibold rounded-xl">Simpan</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL RW/RT */}
+      {showRwModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl max-w-lg w-full p-6 shadow-2xl">
+            <h3 className="font-bold text-lg mb-4 text-gray-800 dark:text-white">{editRwIdx !== null ? 'Edit RW' : 'Tambah RW'}</h3>
+            <form onSubmit={handleSaveRw} className="space-y-3">
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs font-semibold">Nama RW</label>
+                  <input type="text" required value={rwNama} onChange={e => setRwNama(e.target.value)} className="w-full p-2 border rounded-xl dark:bg-gray-700 text-sm" placeholder="Contoh: RW I" />
+                </div>
+                <div>
+                  <label className="text-xs font-semibold">Ketua RW</label>
+                  <input type="text" required value={rwKetua} onChange={e => setRwKetua(e.target.value)} className="w-full p-2 border rounded-xl dark:bg-gray-700 text-sm" placeholder="Nama Ketua RW" />
+                </div>
+              </div>
+              <div>
+                <label className="text-xs font-semibold block mb-1">Daftar RT (satu per baris, format: <code>RT I:Nama Ketua</code>)</label>
+                <textarea
+                  rows={5}
+                  value={rwRtListStr}
+                  onChange={e => setRwRtListStr(e.target.value)}
+                  className="w-full p-2 border rounded-xl dark:bg-gray-700 text-sm font-mono"
+                  placeholder={`RT I:Nama Ketua RT\nRT II:Nama Ketua RT`}
+                />
+              </div>
+              <div className="flex justify-end gap-2 pt-3">
+                <button type="button" onClick={() => setShowRwModal(false)} className="px-3 py-1.5 bg-gray-100 text-xs rounded-xl">Batal</button>
+                <button type="submit" disabled={submitting} className="px-4 py-1.5 bg-indigo-600 text-white text-xs font-semibold rounded-xl">Simpan</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL MUTASI BULANAN */}
+      {showMutasiModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm overflow-y-auto">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl max-w-2xl w-full p-6 shadow-2xl my-4">
+            <h3 className="font-bold text-lg mb-4 text-gray-800 dark:text-white">{editMutasiIdx !== null ? 'Edit Mutasi Bulanan' : 'Tambah Mutasi Bulanan'}</h3>
+            <form onSubmit={handleSaveMutasi} className="space-y-4">
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs font-semibold">Bulan</label>
+                  <select value={mutBulan} onChange={e => setMutBulan(e.target.value)} className="w-full p-2 border rounded-xl dark:bg-gray-700 text-sm">
+                    {BULAN_LIST.map(b => <option key={b} value={b}>{b}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="text-xs font-semibold">Tahun</label>
+                  <input type="number" required value={mutTahun} onChange={e => setMutTahun(Number(e.target.value))} className="w-full p-2 border rounded-xl dark:bg-gray-700 text-sm" />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs font-semibold">Luas Wilayah</label>
+                  <input type="text" value={mutLuas} onChange={e => setMutLuas(e.target.value)} className="w-full p-2 border rounded-xl dark:bg-gray-700 text-sm" placeholder="Contoh: 301 Ha" />
+                </div>
+                <div>
+                  <label className="text-xs font-semibold">Jumlah KK</label>
+                  <input type="number" value={mutKk} onChange={e => setMutKk(Number(e.target.value))} className="w-full p-2 border rounded-xl dark:bg-gray-700 text-sm" />
+                </div>
+              </div>
+              <p className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Awal Bulan</p>
+              <div className="grid grid-cols-2 gap-3">
+                <div><label className="text-xs font-semibold">Laki-laki</label><input type="number" value={mutAwalL} onChange={e => setMutAwalL(Number(e.target.value))} className="w-full p-2 border rounded-xl dark:bg-gray-700 text-sm" /></div>
+                <div><label className="text-xs font-semibold">Perempuan</label><input type="number" value={mutAwalP} onChange={e => setMutAwalP(Number(e.target.value))} className="w-full p-2 border rounded-xl dark:bg-gray-700 text-sm" /></div>
+              </div>
+              <p className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Kelahiran (+)</p>
+              <div className="grid grid-cols-2 gap-3">
+                <div><label className="text-xs font-semibold">Laki-laki</label><input type="number" value={mutLahirL} onChange={e => setMutLahirL(Number(e.target.value))} className="w-full p-2 border rounded-xl dark:bg-gray-700 text-sm" /></div>
+                <div><label className="text-xs font-semibold">Perempuan</label><input type="number" value={mutLahirP} onChange={e => setMutLahirP(Number(e.target.value))} className="w-full p-2 border rounded-xl dark:bg-gray-700 text-sm" /></div>
+              </div>
+              <p className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Kematian (-)</p>
+              <div className="grid grid-cols-2 gap-3">
+                <div><label className="text-xs font-semibold">Laki-laki</label><input type="number" value={mutMatiL} onChange={e => setMutMatiL(Number(e.target.value))} className="w-full p-2 border rounded-xl dark:bg-gray-700 text-sm" /></div>
+                <div><label className="text-xs font-semibold">Perempuan</label><input type="number" value={mutMatiP} onChange={e => setMutMatiP(Number(e.target.value))} className="w-full p-2 border rounded-xl dark:bg-gray-700 text-sm" /></div>
+              </div>
+              <p className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Pendatang (+)</p>
+              <div className="grid grid-cols-2 gap-3">
+                <div><label className="text-xs font-semibold">Laki-laki</label><input type="number" value={mutDatangL} onChange={e => setMutDatangL(Number(e.target.value))} className="w-full p-2 border rounded-xl dark:bg-gray-700 text-sm" /></div>
+                <div><label className="text-xs font-semibold">Perempuan</label><input type="number" value={mutDatangP} onChange={e => setMutDatangP(Number(e.target.value))} className="w-full p-2 border rounded-xl dark:bg-gray-700 text-sm" /></div>
+              </div>
+              <p className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Pindah (-)</p>
+              <div className="grid grid-cols-2 gap-3">
+                <div><label className="text-xs font-semibold">Laki-laki</label><input type="number" value={mutPindahL} onChange={e => setMutPindahL(Number(e.target.value))} className="w-full p-2 border rounded-xl dark:bg-gray-700 text-sm" /></div>
+                <div><label className="text-xs font-semibold">Perempuan</label><input type="number" value={mutPindahP} onChange={e => setMutPindahP(Number(e.target.value))} className="w-full p-2 border rounded-xl dark:bg-gray-700 text-sm" /></div>
+              </div>
+              <p className="text-xs text-gray-400 italic">Akhir bulan dihitung otomatis: Awal + Lahir + Datang − Mati − Pindah</p>
+              <div className="flex justify-end gap-2 pt-3">
+                <button type="button" onClick={() => setShowMutasiModal(false)} className="px-3 py-1.5 bg-gray-100 text-xs rounded-xl">Batal</button>
+                <button type="submit" disabled={submitting} className="px-4 py-1.5 bg-indigo-600 text-white text-xs font-semibold rounded-xl">Simpan</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* MODAL USIA */}
       {showUsiaModal && (
