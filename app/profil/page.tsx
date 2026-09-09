@@ -1,4 +1,4 @@
-import { getProfil, getStruktur } from '@/lib/supabaseClient';
+import { getProfil, getStruktur, getPetugasKontakData } from '@/lib/supabaseClient';
 import HeroSlider from '@/components/HeroSlider';
 import SOTKSectionClient from '@/components/SOTKSectionClient';
 
@@ -19,6 +19,7 @@ const strukturPlaceholder = [
 export default async function ProfilPage() {
   const data = await getProfil();
   const strukturData = await getStruktur();
+  const { petugas: dataPetugas, tpk: dataTPK, mbg: dataMBG } = await getPetugasKontakData();
 
   const { lokasi, kecamatan, kabupaten, sejarah, visi, misi } = data || {};
 
@@ -174,12 +175,107 @@ export default async function ProfilPage() {
           </div>
         </section>
 
-
-
         {/* ── Section SOTK (Struktur Organisasi dan Tata Kerja) dengan Tombol Lihat Lainnya ── */}
         <SOTKSectionClient pejabatList={struktur} />
+
+        {/* ── Struktur Petugas & Kontak Penting, TPK, dan MBG ── */}
+        {dataPetugas && dataPetugas.length > 0 && (
+          <section>
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-3xl font-extrabold text-[#A91D3A] dark:text-red-400 font-['Poppins'] flex items-center gap-2">
+                <span>☎️</span> Struktur Petugas & Kontak Penting
+              </h2>
+              <span className="text-xs font-semibold bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 px-3 py-1 rounded-full border border-emerald-200 dark:border-emerald-800 flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Kontak Aktif
+              </span>
+            </div>
+
+            {/* Main Contacts Table */}
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden mb-8">
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="bg-[#A91D3A] text-white">
+                      <th className="px-6 py-4 text-left font-bold w-1/4">Jabatan</th>
+                      <th className="px-6 py-4 text-left font-bold w-1/3">Nama</th>
+                      <th className="px-6 py-4 text-left font-bold">Kontak / WhatsApp</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
+                    {dataPetugas.map((item: any, idx: number) => (
+                      <tr key={idx} className="hover:bg-red-50/30 dark:hover:bg-gray-700/50 transition">
+                        <td className="px-6 py-4 font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                          <span>{item.icon || '👤'}</span> {item.jabatan}
+                        </td>
+                        <td className="px-6 py-4 font-semibold text-[#A91D3A] dark:text-red-400">
+                          {item.nama}
+                        </td>
+                        <td className="px-6 py-4">
+                          <a
+                            href={`https://wa.me/62${item.kontak.replace(/[^0-9]/g, '').replace(/^0/, '')}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-2 text-emerald-700 dark:text-emerald-400 hover:text-emerald-800 font-bold bg-emerald-50 dark:bg-emerald-950/50 px-3 py-1.5 rounded-xl border border-emerald-200 dark:border-emerald-900 transition text-xs"
+                          >
+                            <span>💬</span> {item.kontak}
+                          </a>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* Sub-Teams Grid: TPK & MBG */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Tim Pendamping Keluarga (TPK) */}
+              <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm border border-gray-200 dark:border-gray-700">
+                <div className="flex items-center gap-3 mb-4">
+                  <span className="text-2xl p-2 bg-pink-50 dark:bg-pink-950/50 rounded-xl text-pink-600">👨‍👩‍👧‍👦</span>
+                  <div>
+                    <h3 className="font-bold text-base text-gray-900 dark:text-white">Tim Pendamping Keluarga (TPK)</h3>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">Pendampingan & Kesejahteraan Keluarga</p>
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  {dataTPK.map((nama: string, idx: number) => (
+                    <div key={idx} className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-xl border border-gray-100 dark:border-gray-700">
+                      <span className="w-7 h-7 rounded-full bg-red-100 dark:bg-red-950 text-[#A91D3A] dark:text-red-400 font-bold text-xs flex items-center justify-center flex-shrink-0">
+                        {idx + 1}
+                      </span>
+                      <span className="font-semibold text-gray-800 dark:text-gray-200 text-sm">{nama}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Petugas MBG (Makan Bergizi Gratis) */}
+              <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm border border-gray-200 dark:border-gray-700">
+                <div className="flex items-center gap-3 mb-4">
+                  <span className="text-2xl p-2 bg-amber-50 dark:bg-amber-950/50 rounded-xl text-amber-600">🍱</span>
+                  <div>
+                    <h3 className="font-bold text-base text-gray-900 dark:text-white">Petugas MBG (Makan Bergizi Gratis)</h3>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">Pelaksana Program Gizi Masyarakat</p>
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  {dataMBG.map((nama: string, idx: number) => (
+                    <div key={idx} className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-xl border border-gray-100 dark:border-gray-700">
+                      <span className="w-7 h-7 rounded-full bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-400 font-bold text-xs flex items-center justify-center flex-shrink-0">
+                        {idx + 1}
+                      </span>
+                      <span className="font-semibold text-gray-800 dark:text-gray-200 text-sm">{nama}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </section>
+        )}
 
       </div>
     </div>
   );
 }
+
