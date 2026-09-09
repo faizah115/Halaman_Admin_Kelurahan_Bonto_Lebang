@@ -287,55 +287,6 @@ export default async function KependudukanPage() {
               </section>
             )}
 
-            {/* Tabel Statistik per RW/RT */}
-            {dataRW.length > 0 && (
-              <section>
-                <div className="flex items-center gap-3 mb-5">
-                  <h2 className="text-2xl font-bold text-gray-800 dark:text-white">Statistik per RW</h2>
-                </div>
-                <div className="bg-white dark:bg-gray-800 rounded-2xl shadow overflow-hidden">
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-sm">
-                      <thead>
-                        <tr className="bg-[#7a1f2b] text-white">
-                          <th className="px-5 py-3 text-left">RW</th>
-                          <th className="px-5 py-3 text-left">RT</th>
-                          <th className="px-5 py-3 text-right">Jumlah KK</th>
-                          <th className="px-5 py-3 text-right">Laki-laki</th>
-                          <th className="px-5 py-3 text-right">Perempuan</th>
-                          <th className="px-5 py-3 text-right">Total Jiwa</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {dataRW.map((row: { rw: string; rt?: string; jumlah_kk: number; laki_laki: number; perempuan: number }, i: number) => (
-                          <tr
-                            key={i}
-                            className="border-b border-gray-100 dark:border-gray-700 hover:bg-red-50/50 dark:hover:bg-gray-700 transition"
-                          >
-                            <td className="px-5 py-3 font-semibold text-[#7a1f2b] dark:text-red-400">{row.rw}</td>
-                            <td className="px-5 py-3 text-gray-600 dark:text-gray-400">{row.rt ?? '—'}</td>
-                            <td className="px-5 py-3 text-right text-amber-700 dark:text-amber-400 font-medium">{row.jumlah_kk.toLocaleString()}</td>
-                            <td className="px-5 py-3 text-right text-[#7a1f2b] dark:text-red-400 font-medium">{row.laki_laki.toLocaleString()}</td>
-                            <td className="px-5 py-3 text-right text-[#e8748a] dark:text-pink-400 font-medium">{row.perempuan.toLocaleString()}</td>
-                            <td className="px-5 py-3 text-right font-bold text-gray-900 dark:text-white">{(row.laki_laki + row.perempuan).toLocaleString()}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                      <tfoot>
-                        <tr className="bg-gray-100 dark:bg-gray-700 font-bold">
-                          <td colSpan={2} className="px-5 py-3">Total</td>
-                          <td className="px-5 py-3 text-right text-amber-700 dark:text-amber-400">{totalKK.toLocaleString()}</td>
-                          <td className="px-5 py-3 text-right text-[#7a1f2b] dark:text-red-400">{totalLaki.toLocaleString()}</td>
-                          <td className="px-5 py-3 text-right text-[#e8748a] dark:text-pink-400">{totalPerempuan.toLocaleString()}</td>
-                          <td className="px-5 py-3 text-right text-gray-900 dark:text-white">{totalPenduduk.toLocaleString()}</td>
-                        </tr>
-                      </tfoot>
-                    </table>
-                  </div>
-                </div>
-              </section>
-            )}
-
             {/* Grafik Kelompok Usia */}
             {dataUsia.length > 0 && (
               <section>

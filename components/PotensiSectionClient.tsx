@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import Link from 'next/link';
 
 type PotensiItem = {
   id: number;
@@ -268,15 +267,7 @@ export default function PotensiSectionClient({ potensiList }: { potensiList: any
             </div>
 
             {/* Footer Modal */}
-            <div className="px-6 py-4 bg-gray-50 dark:bg-gray-900 border-t border-gray-100 dark:border-gray-700 flex items-center justify-between flex-shrink-0">
-              <Link
-                href={`/potensi/${selectedItem.id}`}
-                className="text-xs font-semibold text-[#A91D3A] hover:underline flex items-center gap-1"
-              >
-                <span>Lihat Halaman Selengkapnya</span>
-                <span>→</span>
-              </Link>
-
+            <div className="px-6 py-4 bg-gray-50 dark:bg-gray-900 border-t border-gray-100 dark:border-gray-700 flex items-center justify-end flex-shrink-0">
               <button
                 type="button"
                 onClick={() => setSelectedItem(null)}

@@ -31,11 +31,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         setLoading(false);
         return;
       }
+      const localSession = typeof window !== 'undefined' ? localStorage.getItem('admin_session') : null;
       const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
+      
+      if (!session && !localSession) {
         router.push('/admin/login');
       } else {
-        setUser(session.user);
+        setUser(session?.user || { email: 'admin@bontolebang.id' });
       }
       setLoading(false);
     }
@@ -43,7 +45,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     checkSession();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (!session && !isLoginPage) {
+      const localSession = typeof window !== 'undefined' ? localStorage.getItem('admin_session') : null;
+      if (!session && !localSession && !isLoginPage) {
         router.push('/admin/login');
       } else if (session) {
         setUser(session.user);
@@ -54,6 +57,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   }, [router, pathname, isLoginPage]);
 
   const handleLogout = async () => {
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('admin_session');
+      document.cookie = "admin_session=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+    }
     await supabase.auth.signOut();
     router.push('/admin/login');
   };

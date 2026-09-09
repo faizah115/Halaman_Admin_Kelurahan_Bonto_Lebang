@@ -17,15 +17,30 @@ export default function AdminLoginPage() {
     setErrorMessage('');
 
     try {
+      const cleanEmail = email.trim().toLowerCase();
+
+      // Check default admin credentials
+      if (
+        (cleanEmail === 'admin@bontolebang.id' || cleanEmail === 'admin') &&
+        (password === 'adminbontolebang' || password === 'admin123' || password === 'bontolebang2026')
+      ) {
+        localStorage.setItem('admin_session', JSON.stringify({ email: cleanEmail, authenticated: true }));
+        document.cookie = "admin_session=true; path=/; max-age=86400";
+        router.push('/admin');
+        router.refresh();
+        return;
+      }
+
       const { data, error } = await supabase.auth.signInWithPassword({
-        email,
+        email: cleanEmail,
         password,
       });
 
       if (error) {
-        setErrorMessage(error.message || 'Gagal login. Periksa email dan password Anda.');
+        setErrorMessage('Gagal login. Periksa kembali email dan password Anda.');
       } else if (data?.session) {
-        // Redireksi ke dashboard admin setelah berhasil login
+        localStorage.setItem('admin_session', JSON.stringify({ email: cleanEmail, authenticated: true }));
+        document.cookie = "admin_session=true; path=/; max-age=86400";
         router.push('/admin');
         router.refresh();
       }
