@@ -1,11 +1,9 @@
-import { getStatistikUsia, getMataPencaharian, getPertumbuhanPenduduk, getStatistikAgama, getStunting, getStatistikPendidikan, getStatistikPerkawinan, getDataUmum, getStrukturRWRT, getMutasiBulanan } from '@/lib/supabaseClient';
+import { getStatistikUsia, getMataPencaharian, getPertumbuhanPenduduk, getStatistikAgama, getStunting, getStatistikPendidikan, getStatistikPerkawinan } from '@/lib/supabaseClient';
 import { GrafikUsia, GrafikPertumbuhan, GrafikStunting, GrafikMataPencaharian, GrafikAgama, GrafikPerkawinan, GrafikPendidikan } from './GrafikKependudukan';
 
 export const dynamic = 'force-dynamic';
 
 export default async function KependudukanPage() {
-  const dataStrukturRW = await getStrukturRWRT();
-  const dataUmum = await getDataUmum();
   const rawUsia = await getStatistikUsia();
   const rawMata = await getMataPencaharian();
   const rawPertumbuhan = await getPertumbuhanPenduduk();
@@ -13,7 +11,6 @@ export default async function KependudukanPage() {
   const rawStunting = await getStunting();
   const rawPendidikan = await getStatistikPendidikan();
   const rawPerkawinan = await getStatistikPerkawinan();
-  const rawMutasi = await getMutasiBulanan();
 
   const dataUsia = rawUsia && rawUsia.length > 0 ? rawUsia : [];
   const dataMata = rawMata && rawMata.length > 0 ? rawMata : [];
@@ -24,9 +21,6 @@ export default async function KependudukanPage() {
   const dataPerkawinan = rawPerkawinan && rawPerkawinan.length > 0 ? rawPerkawinan : [];
 
   const hasData =
-    (dataStrukturRW && dataStrukturRW.length > 0) ||
-    (dataUmum && dataUmum.length > 0) ||
-    (rawMutasi && rawMutasi.length > 0) ||
     dataUsia.length > 0 ||
     dataMata.length > 0 ||
     dataPertumbuhan.length > 0 ||
@@ -56,104 +50,7 @@ export default async function KependudukanPage() {
         ) : (
           <div className="space-y-14">
 
-            {/* Struktur Wilayah RW & RT */}
-            {dataStrukturRW && dataStrukturRW.length > 0 && (
-              <section>
-                <div className="flex items-center justify-between mb-5">
-                  <h2 className="text-2xl font-extrabold text-[#7a1f2b] dark:text-red-400 font-['Poppins'] flex items-center gap-2">
-                    <span>🏠</span> Struktur Wilayah RW & RT
-                  </h2>
-                  <span className="text-xs font-semibold bg-red-100 dark:bg-red-950/60 text-[#7a1f2b] dark:text-red-300 px-3 py-1 rounded-full border border-red-200 dark:border-red-800">
-                    Kelurahan Bonto Lebang
-                  </span>
-                </div>
-                <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-sm">
-                      <thead>
-                        <tr className="bg-[#7a1f2b] text-white">
-                          <th className="px-6 py-4 text-left font-bold w-1/6">RW</th>
-                          <th className="px-6 py-4 text-left font-bold w-1/4">Ketua RW</th>
-                          <th className="px-6 py-4 text-left font-bold">RT & Ketua RT</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
-                        {dataStrukturRW.map((item: any, idx: number) => (
-                          <tr key={idx} className="hover:bg-red-50/30 dark:hover:bg-gray-700/50 transition">
-                            <td className="px-6 py-4 font-black text-[#7a1f2b] dark:text-red-400 text-base">
-                              {item.rw}
-                            </td>
-                            <td className="px-6 py-4 font-semibold text-gray-800 dark:text-gray-200">
-                              {item.ketua_rw && item.ketua_rw !== '-' ? (
-                                <span className="flex items-center gap-2">
-                                  <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
-                                  {item.ketua_rw}
-                                </span>
-                              ) : (
-                                <span className="text-gray-400 italic">-</span>
-                              )}
-                            </td>
-                            <td className="px-6 py-4">
-                              {item.rt_list && item.rt_list.length > 0 ? (
-                                <div className="flex flex-wrap gap-2">
-                                  {item.rt_list.map((rt: any, rtIdx: number) => (
-                                    <div
-                                      key={rtIdx}
-                                      className="inline-flex items-center gap-1.5 bg-gray-50 dark:bg-gray-700/70 border border-gray-200 dark:border-gray-600 rounded-xl px-3 py-1.5 text-xs font-medium text-gray-700 dark:text-gray-200"
-                                    >
-                                      <span className="font-bold text-[#7a1f2b] dark:text-red-400">{rt.rt}:</span>
-                                      <span>{rt.ketua_rt}</span>
-                                    </div>
-                                  ))}
-                                </div>
-                              ) : (
-                                <span className="text-gray-400 italic text-xs">-</span>
-                              )}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              </section>
-            )}
-
-            {/* Data Umum Wilayah */}
-            {dataUmum && dataUmum.length > 0 && (
-              <section>
-                <div className="flex items-center gap-3 mb-5">
-                  <h2 className="text-2xl font-extrabold text-[#7a1f2b] dark:text-red-400 font-['Poppins']">
-                    Data Umum Wilayah
-                  </h2>
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-                  {dataUmum.map((item: any) => (
-                    <div
-                      key={item.keterangan}
-                      className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-700 hover:shadow-md transition-all flex flex-col justify-between"
-                    >
-                      <div className="flex items-center justify-between mb-3">
-                        <span className="text-3xl">{item.icon || '📍'}</span>
-                        <span className="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-red-50 dark:bg-red-950/50 text-[#7a1f2b] dark:text-red-400 border border-red-100 dark:border-red-900">
-                          Data Terkini
-                        </span>
-                      </div>
-                      <div>
-                        <p className="text-gray-500 dark:text-gray-400 text-xs font-medium uppercase tracking-wider mb-1">
-                          {item.keterangan}
-                        </p>
-                        <p className="text-2xl font-black text-gray-900 dark:text-white">
-                          {item.jumlah}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </section>
-            )}
-
-            {/* Grafik Kelompok Usia */}
+            {/* Kelompok Usia */}
             {dataUsia.length > 0 && (
               <section>
                 <div className="flex items-center gap-3 mb-5">
@@ -196,120 +93,6 @@ export default async function KependudukanPage() {
               </section>
             )}
 
-            {/* Mutasi Penduduk Bulanan */}
-            {rawMutasi && rawMutasi.length > 0 && (
-              <section>
-                <div className="flex items-center justify-between mb-5">
-                  <h2 className="text-2xl font-extrabold text-[#7a1f2b] dark:text-red-400 font-['Poppins'] flex items-center gap-2">
-                    <span>📋</span> Mutasi Penduduk Bulanan
-                  </h2>
-                  <span className="text-xs font-semibold bg-blue-100 dark:bg-blue-950/60 text-blue-800 dark:text-blue-300 px-3 py-1 rounded-full border border-blue-200 dark:border-blue-800">
-                    Rekapitulasi Bulanan
-                  </span>
-                </div>
-                {rawMutasi.map((m: any) => (
-                  <div key={`${m.bulan}-${m.tahun}`} className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden mb-6">
-                    <div className="bg-gradient-to-r from-[#7a1f2b] to-[#a91d3a] text-white px-6 py-4 flex flex-wrap items-center justify-between gap-3">
-                      <div>
-                        <h3 className="text-lg font-extrabold">Bulan {m.periode}</h3>
-                        <p className="text-red-200 text-xs mt-0.5">
-                          Luas Wilayah: {m.luas_wilayah} &nbsp;|&nbsp; Jumlah KK: {m.jumlah_kk?.toLocaleString('id-ID')} KK
-                        </p>
-                      </div>
-                      <div className="flex gap-4 text-center">
-                        <div>
-                          <p className="text-2xl font-black">{m.akhir_bulan.total.toLocaleString('id-ID')}</p>
-                          <p className="text-red-200 text-xs">Total Akhir</p>
-                        </div>
-                        <div className="border-l border-red-300/50 pl-4">
-                          <p className="text-lg font-bold">{m.akhir_bulan.laki_laki.toLocaleString('id-ID')}</p>
-                          <p className="text-red-200 text-xs">Laki-laki</p>
-                        </div>
-                        <div className="border-l border-red-300/50 pl-4">
-                          <p className="text-lg font-bold">{m.akhir_bulan.perempuan.toLocaleString('id-ID')}</p>
-                          <p className="text-red-200 text-xs">Perempuan</p>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="overflow-x-auto">
-                      <table className="w-full text-sm">
-                        <thead>
-                          <tr className="bg-gray-50 dark:bg-gray-700/50 border-b border-gray-200 dark:border-gray-600">
-                            <th className="px-5 py-3 text-left font-bold text-gray-700 dark:text-gray-300">Keterangan</th>
-                            <th className="px-5 py-3 text-right font-bold text-[#7a1f2b] dark:text-red-400">Laki-laki</th>
-                            <th className="px-5 py-3 text-right font-bold text-[#e8748a] dark:text-pink-400">Perempuan</th>
-                            <th className="px-5 py-3 text-right font-bold text-gray-800 dark:text-white">Total</th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
-                          <tr className="bg-blue-50/50 dark:bg-blue-950/20 hover:bg-blue-50 dark:hover:bg-blue-950/40 transition">
-                            <td className="px-5 py-3 font-semibold text-gray-800 dark:text-gray-200 flex items-center gap-2">
-                              <span className="w-2 h-2 rounded-full bg-blue-500 inline-block"></span> Awal Bulan
-                            </td>
-                            <td className="px-5 py-3 text-right font-medium text-[#7a1f2b] dark:text-red-400">{m.awal_bulan.laki_laki.toLocaleString('id-ID')}</td>
-                            <td className="px-5 py-3 text-right font-medium text-[#e8748a] dark:text-pink-400">{m.awal_bulan.perempuan.toLocaleString('id-ID')}</td>
-                            <td className="px-5 py-3 text-right font-bold text-gray-900 dark:text-white">{m.awal_bulan.total.toLocaleString('id-ID')}</td>
-                          </tr>
-                          <tr className="hover:bg-green-50/30 dark:hover:bg-gray-700/50 transition">
-                            <td className="px-5 py-3 font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2">
-                              <span className="w-2 h-2 rounded-full bg-green-500 inline-block"></span> Lahir
-                            </td>
-                            <td className="px-5 py-3 text-right text-emerald-700 dark:text-emerald-400 font-medium">+{m.kelahiran.laki_laki}</td>
-                            <td className="px-5 py-3 text-right text-emerald-700 dark:text-emerald-400 font-medium">+{m.kelahiran.perempuan}</td>
-                            <td className="px-5 py-3 text-right text-emerald-700 dark:text-emerald-400 font-bold">+{m.kelahiran.total}</td>
-                          </tr>
-                          <tr className="hover:bg-red-50/30 dark:hover:bg-gray-700/50 transition">
-                            <td className="px-5 py-3 font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2">
-                              <span className="w-2 h-2 rounded-full bg-rose-500 inline-block"></span> Mati
-                            </td>
-                            <td className="px-5 py-3 text-right text-rose-600 dark:text-rose-400 font-medium">-{m.kematian.laki_laki}</td>
-                            <td className="px-5 py-3 text-right text-rose-600 dark:text-rose-400 font-medium">-{m.kematian.perempuan}</td>
-                            <td className="px-5 py-3 text-right text-rose-600 dark:text-rose-400 font-bold">-{m.kematian.total}</td>
-                          </tr>
-                          <tr className="hover:bg-indigo-50/30 dark:hover:bg-gray-700/50 transition">
-                            <td className="px-5 py-3 font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2">
-                              <span className="w-2 h-2 rounded-full bg-indigo-500 inline-block"></span> Pendatang
-                            </td>
-                            <td className="px-5 py-3 text-right text-indigo-600 dark:text-indigo-400 font-medium">+{m.pendatang.laki_laki}</td>
-                            <td className="px-5 py-3 text-right text-indigo-600 dark:text-indigo-400 font-medium">+{m.pendatang.perempuan}</td>
-                            <td className="px-5 py-3 text-right text-indigo-600 dark:text-indigo-400 font-bold">+{m.pendatang.total}</td>
-                          </tr>
-                          <tr className="hover:bg-amber-50/30 dark:hover:bg-gray-700/50 transition">
-                            <td className="px-5 py-3 font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2">
-                              <span className="w-2 h-2 rounded-full bg-amber-500 inline-block"></span> Pindah
-                            </td>
-                            <td className="px-5 py-3 text-right text-amber-600 dark:text-amber-400 font-medium">-{m.pindah.laki_laki}</td>
-                            <td className="px-5 py-3 text-right text-amber-600 dark:text-amber-400 font-medium">-{m.pindah.perempuan}</td>
-                            <td className="px-5 py-3 text-right text-amber-600 dark:text-amber-400 font-bold">-{m.pindah.total}</td>
-                          </tr>
-                        </tbody>
-                        <tfoot>
-                          <tr className="bg-[#7a1f2b]/5 dark:bg-red-950/20 border-t-2 border-[#7a1f2b]/20 font-bold">
-                            <td className="px-5 py-4 text-[#7a1f2b] dark:text-red-400 font-extrabold flex items-center gap-2">
-                              <span>✅</span> Akhir Bulan
-                            </td>
-                            <td className="px-5 py-4 text-right text-[#7a1f2b] dark:text-red-400 text-base">{m.akhir_bulan.laki_laki.toLocaleString('id-ID')}</td>
-                            <td className="px-5 py-4 text-right text-[#e8748a] dark:text-pink-400 text-base">{m.akhir_bulan.perempuan.toLocaleString('id-ID')}</td>
-                            <td className="px-5 py-4 text-right text-gray-900 dark:text-white text-lg">{m.akhir_bulan.total.toLocaleString('id-ID')}</td>
-                          </tr>
-                        </tfoot>
-                      </table>
-                    </div>
-                    <div className="px-6 py-4 bg-gray-50 dark:bg-gray-700/30 border-t border-gray-100 dark:border-gray-700">
-                      <p className="text-xs text-gray-500 dark:text-gray-400">
-                        Selisih bulan ini:&nbsp;
-                        <span className={`font-bold ${m.akhir_bulan.total - m.awal_bulan.total >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}>
-                          {m.akhir_bulan.total - m.awal_bulan.total >= 0 ? '+' : ''}
-                          {(m.akhir_bulan.total - m.awal_bulan.total).toLocaleString('id-ID')} jiwa
-                        </span>
-                        &ensp;|&ensp; Sumber: Laporan Bulanan Kelurahan Bonto Lebang
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </section>
-            )}
-
             {/* Pertumbuhan Penduduk */}
             {dataPertumbuhan.length > 0 && (
               <section>
@@ -322,7 +105,7 @@ export default async function KependudukanPage() {
               </section>
             )}
 
-            {/* Data Stunting Balita */}
+            {/* Stunting Balita */}
             {dataStunting.length > 0 && (
               <section>
                 <div className="flex items-center gap-3 mb-5">
@@ -334,7 +117,7 @@ export default async function KependudukanPage() {
               </section>
             )}
 
-            {/* Catatan Sumber Data */}
+            {/* Catatan */}
             <div className="text-center text-sm text-gray-400 dark:text-gray-500 italic pb-4">
               Data kependudukan per tahun {new Date().getFullYear()} — Kelurahan Bonto Lebang
             </div>

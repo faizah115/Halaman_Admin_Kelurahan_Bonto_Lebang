@@ -5,8 +5,8 @@ import { supabase } from '@/lib/supabaseClient';
  * API Route: GET /api/seed-data-januari-2026
  * Menyimpan data mutasi penduduk Bulan Januari 2026 ke database Supabase
  *
- * Data Sumber:
- * - Luas Wilayah       : 301 Ha
+ * Data Sumber (Laporan Resmi):
+ * - Luas Wilayah       : 301 Km
  * - Jumlah KK          : 1.127 KK
  * - Awal Bulan Jan     : 3.692 jiwa (L: 1.872, P: 1.820)
  * - Kelahiran          : 5 jiwa (L: 4, P: 1)
@@ -17,11 +17,12 @@ import { supabase } from '@/lib/supabaseClient';
  */
 export async function GET() {
   try {
-    // ─── 1. Data Mutasi Penduduk Januari 2026 ────────────────────────────────
     const mutasiJanuari2026 = {
       bulan: 'Januari',
       tahun: 2026,
       periode: 'Januari 2026',
+      luas_wilayah: '301 Km',
+      jumlah_kk: 1127,
       awal_bulan: {
         total: 3692,
         laki_laki: 1872,
@@ -48,17 +49,15 @@ export async function GET() {
         perempuan: 0,
       },
       akhir_bulan: {
-        // L = 1872 + 4(lahir) - 2(mati) + 0(datang) - 1(pindah) = 1873
-        // P = 1820 + 1(lahir) - 0(mati) + 0(datang) - 0(pindah) = 1821
+        // L: 1872 + 4(lahir) - 2(mati) + 0(datang) - 1(pindah) = 1873 ✓
+        // P: 1820 + 1(lahir) - 0(mati) + 0(datang) - 0(pindah) = 1821 ✓
         total: 3694,
         laki_laki: 1873,
         perempuan: 1821,
       },
-      jumlah_kk: 1127,
-      luas_wilayah: '301 Ha',
     };
 
-    // ─── 2. Baca profil existing ─────────────────────────────────────────────
+    // ─── Baca profil existing ──────────────────────────────────────────────────
     const { data: profilData, error: profilError } = await supabase
       .from('profil')
       .select('*')
@@ -69,6 +68,7 @@ export async function GET() {
       return NextResponse.json({ success: false, error: 'Gagal membaca profil: ' + profilError.message });
     }
 
+    // ─── Parse JSON meta dari kolom sejarah ────────────────────────────────────
     let meta: any = {};
     if (profilData?.sejarah && typeof profilData.sejarah === 'string' && profilData.sejarah.startsWith('{')) {
       try {
@@ -78,17 +78,17 @@ export async function GET() {
       }
     }
 
-    // Simpan riwayat mutasi bulanan (array, append atau replace)
+    // ─── Tambah / update data mutasi Januari 2026 ─────────────────────────────
     if (!Array.isArray(meta.mutasi_bulanan)) {
       meta.mutasi_bulanan = [];
     }
-    // Hapus data Januari 2026 lama jika ada, lalu tambahkan yang baru
+    // Hapus duplikat jika ada
     meta.mutasi_bulanan = meta.mutasi_bulanan.filter(
       (m: any) => !(m.bulan === 'Januari' && m.tahun === 2026)
     );
     meta.mutasi_bulanan.push(mutasiJanuari2026);
 
-    // Simpan kembali ke profil
+    // ─── Simpan ke Supabase ───────────────────────────────────────────────────
     let saveError: any = null;
     if (profilData) {
       const { error } = await supabase
@@ -104,7 +104,7 @@ export async function GET() {
     }
 
     if (saveError) {
-      return NextResponse.json({ success: false, error: 'Gagal menyimpan data profil: ' + saveError.message });
+      return NextResponse.json({ success: false, error: 'Gagal menyimpan: ' + saveError.message });
     }
 
     return NextResponse.json({
@@ -112,7 +112,7 @@ export async function GET() {
       message: 'Data mutasi penduduk Januari 2026 berhasil disimpan ke database.',
       summary: {
         periode: 'Januari 2026',
-        luas_wilayah: '301 Ha',
+        luas_wilayah: '301 Km',
         jumlah_kk: '1.127 KK',
         awal_bulan: { total: 3692, laki_laki: 1872, perempuan: 1820 },
         perubahan: {

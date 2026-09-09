@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { supabase, getMataPencaharian, getStatistikAgama, getProfil, getStrukturRWRT, getDataUmum, getMutasiBulanan } from '@/lib/supabaseClient';
+import { supabase, getMataPencaharian, getStatistikAgama, getProfil } from '@/lib/supabaseClient';
 
 type UsiaItem = {
   id: number;
@@ -44,40 +44,8 @@ type JsonStatItem = {
   value: number;
 };
 
-type DataUmumItem = {
-  id: number;
-  keterangan: string;
-  jumlah: string;
-  icon?: string;
-};
-
-type RTItem = {
-  rt: string;
-  ketua_rt: string;
-};
-
-type RWItem = {
-  rw: string;
-  ketua_rw: string;
-  rt_list: RTItem[];
-};
-
-type MutasiBulanan = {
-  bulan: string;
-  tahun: number;
-  periode: string;
-  luas_wilayah: string;
-  jumlah_kk: number;
-  awal_bulan: { laki_laki: number; perempuan: number; total: number };
-  kelahiran: { laki_laki: number; perempuan: number; total: number };
-  kematian: { laki_laki: number; perempuan: number; total: number };
-  pendatang: { laki_laki: number; perempuan: number; total: number };
-  pindah: { laki_laki: number; perempuan: number; total: number };
-  akhir_bulan: { laki_laki: number; perempuan: number; total: number };
-};
-
 export default function AdminKependudukanPage() {
-  const [activeTab, setActiveTab] = useState<'rwrt' | 'dataUmum' | 'usia' | 'mata' | 'pertumbuhan' | 'agama' | 'stunting' | 'pendidikan' | 'perkawinan' | 'mutasi'>('rwrt');
+  const [activeTab, setActiveTab] = useState<'usia' | 'mata' | 'pertumbuhan' | 'agama' | 'stunting' | 'pendidikan' | 'perkawinan'>('usia');
   const [loading, setLoading] = useState(true);
 
   // Data states
@@ -88,9 +56,6 @@ export default function AdminKependudukanPage() {
   const [stuntingList, setStuntingList] = useState<StuntingItem[]>([]);
   const [pendidikanList, setPendidikanList] = useState<JsonStatItem[]>([]);
   const [perkawinanList, setPerkawinanList] = useState<JsonStatItem[]>([]);
-  const [rwrtList, setRwrtList] = useState<RWItem[]>([]);
-  const [dataUmumList, setDataUmumList] = useState<DataUmumItem[]>([]);
-  const [mutasiList, setMutasiList] = useState<MutasiBulanan[]>([]);
   const [profilId, setProfilId] = useState<number | null>(null);
   const [rawMeta, setRawMeta] = useState<any>({});
 
@@ -135,38 +100,6 @@ export default function AdminKependudukanPage() {
   const [jumlahNormal, setJumlahNormal] = useState(0);
 
   const [submitting, setSubmitting] = useState(false);
-
-  // ─── MODAL DATA UMUM ──────────────────────────────────────────────────────────
-  const [showDataUmumModal, setShowDataUmumModal] = useState(false);
-  const [editDataUmum, setEditDataUmum] = useState<DataUmumItem | null>(null);
-  const [duKeterangan, setDuKeterangan] = useState('');
-  const [duJumlah, setDuJumlah] = useState('');
-  const [duIcon, setDuIcon] = useState('📍');
-
-  // ─── MODAL RW/RT ──────────────────────────────────────────────────────────────
-  const [showRwModal, setShowRwModal] = useState(false);
-  const [editRwIdx, setEditRwIdx] = useState<number | null>(null);
-  const [rwNama, setRwNama] = useState('');
-  const [rwKetua, setRwKetua] = useState('');
-  const [rwRtListStr, setRwRtListStr] = useState('');
-
-  // ─── MODAL MUTASI ──────────────────────────────────────────────────────────────
-  const [showMutasiModal, setShowMutasiModal] = useState(false);
-  const [editMutasiIdx, setEditMutasiIdx] = useState<number | null>(null);
-  const [mutBulan, setMutBulan] = useState('Januari');
-  const [mutTahun, setMutTahun] = useState(new Date().getFullYear());
-  const [mutLuas, setMutLuas] = useState('');
-  const [mutKk, setMutKk] = useState(0);
-  const [mutAwalL, setMutAwalL] = useState(0);
-  const [mutAwalP, setMutAwalP] = useState(0);
-  const [mutLahirL, setMutLahirL] = useState(0);
-  const [mutLahirP, setMutLahirP] = useState(0);
-  const [mutMatiL, setMutMatiL] = useState(0);
-  const [mutMatiP, setMutMatiP] = useState(0);
-  const [mutDatangL, setMutDatangL] = useState(0);
-  const [mutDatangP, setMutDatangP] = useState(0);
-  const [mutPindahL, setMutPindahL] = useState(0);
-  const [mutPindahP, setMutPindahP] = useState(0);
 
   useEffect(() => {
     fetchAllData();
@@ -238,177 +171,7 @@ export default function AdminKependudukanPage() {
       setPerkawinanList([]);
     }
 
-    const rwData = await getStrukturRWRT();
-    setRwrtList(Array.isArray(rwData) ? rwData : []);
-
-    const umum = await getDataUmum();
-    setDataUmumList(Array.isArray(umum) ? umum : []);
-
-    const mutasi = await getMutasiBulanan();
-    setMutasiList(Array.isArray(mutasi) ? mutasi : []);
-
     setLoading(false);
-  };
-
-  // ─── SAVE PROFIL JSON (helper) ───────────────────────────────────────────────
-  const saveProfilJson = async (field: string, value: any) => {
-    setSubmitting(true);
-    if (profilId) {
-      const { error } = await supabase.from('profil').update({ [field]: value }).eq('id', profilId);
-      if (error) alert('Gagal menyimpan: ' + error.message);
-      else fetchAllData();
-    } else {
-      alert('Data profil belum tersedia. Harap isi profil terlebih dahulu.');
-    }
-    setSubmitting(false);
-  };
-
-  // ─── HANDLERS DATA UMUM ──────────────────────────────────────────────────────
-  const handleOpenDataUmumModal = (item?: DataUmumItem) => {
-    if (item) {
-      setEditDataUmum(item);
-      setDuKeterangan(item.keterangan);
-      setDuJumlah(item.jumlah);
-      setDuIcon(item.icon || '📍');
-    } else {
-      setEditDataUmum(null);
-      setDuKeterangan('');
-      setDuJumlah('');
-      setDuIcon('📍');
-    }
-    setShowDataUmumModal(true);
-  };
-
-  const handleSaveDataUmum = async (e: React.FormEvent) => {
-    e.preventDefault();
-    let updated: DataUmumItem[];
-    if (editDataUmum) {
-      updated = dataUmumList.map((d) => d.id === editDataUmum.id ? { ...d, keterangan: duKeterangan, jumlah: duJumlah, icon: duIcon } : d);
-    } else {
-      const newId = dataUmumList.length > 0 ? Math.max(...dataUmumList.map(d => d.id)) + 1 : 1;
-      updated = [...dataUmumList, { id: newId, keterangan: duKeterangan, jumlah: duJumlah, icon: duIcon }];
-    }
-    await saveProfilJson('data_umum', updated);
-    setShowDataUmumModal(false);
-  };
-
-  const handleDeleteDataUmum = async (id: number) => {
-    if (!confirm('Hapus data umum ini?')) return;
-    const updated = dataUmumList.filter(d => d.id !== id);
-    await saveProfilJson('data_umum', updated);
-  };
-
-  // ─── HANDLERS RW/RT ──────────────────────────────────────────────────────────
-  const handleOpenRwModal = (idx?: number) => {
-    if (idx !== undefined) {
-      const item = rwrtList[idx];
-      setEditRwIdx(idx);
-      setRwNama(item.rw);
-      setRwKetua(item.ketua_rw);
-      setRwRtListStr(item.rt_list.map(rt => `${rt.rt}:${rt.ketua_rt}`).join('\n'));
-    } else {
-      setEditRwIdx(null);
-      setRwNama('');
-      setRwKetua('');
-      setRwRtListStr('');
-    }
-    setShowRwModal(true);
-  };
-
-  const handleSaveRw = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const rt_list = rwRtListStr
-      .split('\n')
-      .map(line => line.trim())
-      .filter(Boolean)
-      .map(line => {
-        const [rt, ...rest] = line.split(':');
-        return { rt: rt.trim(), ketua_rt: rest.join(':').trim() };
-      });
-    const newItem: RWItem = { rw: rwNama, ketua_rw: rwKetua, rt_list };
-    let updated: RWItem[];
-    if (editRwIdx !== null) {
-      updated = rwrtList.map((r, i) => i === editRwIdx ? newItem : r);
-    } else {
-      updated = [...rwrtList, newItem];
-    }
-    await saveProfilJson('struktur_rw', updated);
-    setShowRwModal(false);
-  };
-
-  const handleDeleteRw = async (idx: number) => {
-    if (!confirm('Hapus data RW ini beserta seluruh RT-nya?')) return;
-    const updated = rwrtList.filter((_, i) => i !== idx);
-    await saveProfilJson('struktur_rw', updated);
-  };
-
-  // ─── HANDLERS MUTASI BULANAN ─────────────────────────────────────────────────
-  const BULAN_LIST = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
-
-  const handleOpenMutasiModal = (idx?: number) => {
-    if (idx !== undefined) {
-      const m = mutasiList[idx];
-      setEditMutasiIdx(idx);
-      setMutBulan(m.bulan);
-      setMutTahun(m.tahun);
-      setMutLuas(m.luas_wilayah);
-      setMutKk(m.jumlah_kk);
-      setMutAwalL(m.awal_bulan.laki_laki);
-      setMutAwalP(m.awal_bulan.perempuan);
-      setMutLahirL(m.kelahiran.laki_laki);
-      setMutLahirP(m.kelahiran.perempuan);
-      setMutMatiL(m.kematian.laki_laki);
-      setMutMatiP(m.kematian.perempuan);
-      setMutDatangL(m.pendatang.laki_laki);
-      setMutDatangP(m.pendatang.perempuan);
-      setMutPindahL(m.pindah.laki_laki);
-      setMutPindahP(m.pindah.perempuan);
-    } else {
-      setEditMutasiIdx(null);
-      setMutBulan('Januari');
-      setMutTahun(new Date().getFullYear());
-      setMutLuas('');
-      setMutKk(0);
-      setMutAwalL(0); setMutAwalP(0);
-      setMutLahirL(0); setMutLahirP(0);
-      setMutMatiL(0); setMutMatiP(0);
-      setMutDatangL(0); setMutDatangP(0);
-      setMutPindahL(0); setMutPindahP(0);
-    }
-    setShowMutasiModal(true);
-  };
-
-  const handleSaveMutasi = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const akhirL = mutAwalL + mutLahirL + mutDatangL - mutMatiL - mutPindahL;
-    const akhirP = mutAwalP + mutLahirP + mutDatangP - mutMatiP - mutPindahP;
-    const newItem: MutasiBulanan = {
-      bulan: mutBulan,
-      tahun: mutTahun,
-      periode: `${mutBulan} ${mutTahun}`,
-      luas_wilayah: mutLuas,
-      jumlah_kk: mutKk,
-      awal_bulan: { laki_laki: mutAwalL, perempuan: mutAwalP, total: mutAwalL + mutAwalP },
-      kelahiran: { laki_laki: mutLahirL, perempuan: mutLahirP, total: mutLahirL + mutLahirP },
-      kematian: { laki_laki: mutMatiL, perempuan: mutMatiP, total: mutMatiL + mutMatiP },
-      pendatang: { laki_laki: mutDatangL, perempuan: mutDatangP, total: mutDatangL + mutDatangP },
-      pindah: { laki_laki: mutPindahL, perempuan: mutPindahP, total: mutPindahL + mutPindahP },
-      akhir_bulan: { laki_laki: akhirL, perempuan: akhirP, total: akhirL + akhirP },
-    };
-    let updated: MutasiBulanan[];
-    if (editMutasiIdx !== null) {
-      updated = mutasiList.map((m, i) => i === editMutasiIdx ? newItem : m);
-    } else {
-      updated = [...mutasiList, newItem];
-    }
-    await saveProfilJson('mutasi_bulanan', updated);
-    setShowMutasiModal(false);
-  };
-
-  const handleDeleteMutasi = async (idx: number) => {
-    if (!confirm('Hapus data mutasi bulan ini?')) return;
-    const updated = mutasiList.filter((_, i) => i !== idx);
-    await saveProfilJson('mutasi_bulanan', updated);
   };
 
   // ─── HANDLERS KELOMPOK USIA ──────────────────────────────────────────────────
