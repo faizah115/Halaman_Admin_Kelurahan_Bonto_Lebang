@@ -1,5 +1,5 @@
-import { getStatistikUsia, getMataPencaharian, getPertumbuhanPenduduk, getStatistikAgama, getStunting, getStatistikPendidikan, getStatistikPerkawinan } from '@/lib/supabaseClient';
-import { GrafikUsia, GrafikPertumbuhan, GrafikStunting, GrafikMataPencaharian, GrafikAgama, GrafikPerkawinan, GrafikPendidikan } from './GrafikKependudukan';
+import { getStatistikUsia, getMataPencaharian, getPertumbuhanPenduduk, getStatistikAgama, getStunting, getStatistikPendidikan, getStatistikPerkawinan, getMutasiBulanan } from '@/lib/supabaseClient';
+import { GrafikUsia, GrafikPertumbuhan, GrafikStunting, GrafikMataPencaharian, GrafikAgama, GrafikPerkawinan, GrafikPendidikan, MutasiBulananSection } from './GrafikKependudukan';
 
 export const dynamic = 'force-dynamic';
 
@@ -11,6 +11,7 @@ export default async function KependudukanPage() {
   const rawStunting = await getStunting();
   const rawPendidikan = await getStatistikPendidikan();
   const rawPerkawinan = await getStatistikPerkawinan();
+  const rawMutasi = await getMutasiBulanan();
 
   const dataUsia = rawUsia && rawUsia.length > 0 ? rawUsia : [];
   const dataMata = rawMata && rawMata.length > 0 ? rawMata : [];
@@ -19,8 +20,10 @@ export default async function KependudukanPage() {
   const dataStunting = rawStunting && rawStunting.length > 0 ? rawStunting : [];
   const dataPendidikan = rawPendidikan && rawPendidikan.length > 0 ? rawPendidikan : [];
   const dataPerkawinan = rawPerkawinan && rawPerkawinan.length > 0 ? rawPerkawinan : [];
+  const dataMutasi = rawMutasi && rawMutasi.length > 0 ? rawMutasi : [];
 
   const hasData =
+    dataMutasi.length > 0 ||
     dataUsia.length > 0 ||
     dataMata.length > 0 ||
     dataPertumbuhan.length > 0 ||
@@ -49,6 +52,13 @@ export default async function KependudukanPage() {
           </div>
         ) : (
           <div className="space-y-14">
+
+            {/* Mutasi & Dinamika Penduduk Bulanan */}
+            {dataMutasi.length > 0 && (
+              <section>
+                <MutasiBulananSection data={dataMutasi} />
+              </section>
+            )}
 
             {/* Kelompok Usia */}
             {dataUsia.length > 0 && (
@@ -127,3 +137,4 @@ export default async function KependudukanPage() {
     </div>
   );
 }
+

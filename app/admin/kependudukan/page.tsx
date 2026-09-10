@@ -44,8 +44,40 @@ type JsonStatItem = {
   value: number;
 };
 
+type RwItem = {
+  rw: string;
+  ketua_rw: string;
+  rt_list?: { rt: string; ketua_rt: string }[];
+};
+
+type DataUmumItem = {
+  id: number;
+  keterangan: string;
+  jumlah: string;
+  icon: string;
+};
+
+type MutasiItem = {
+  bulan: string;
+  tahun: number;
+  periode: string;
+  luas_wilayah?: string;
+  jumlah_kk?: number;
+  awal_bulan: { total: number; laki_laki: number; perempuan: number };
+  kelahiran: { total: number; laki_laki: number; perempuan: number };
+  kematian: { total: number; laki_laki: number; perempuan: number };
+  pendatang: { total: number; laki_laki: number; perempuan: number };
+  pindah: { total: number; laki_laki: number; perempuan: number };
+  akhir_bulan: { total: number; laki_laki: number; perempuan: number };
+};
+
+const BULAN_LIST = [
+  'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+  'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+];
+
 export default function AdminKependudukanPage() {
-  const [activeTab, setActiveTab] = useState<'usia' | 'mata' | 'pertumbuhan' | 'agama' | 'stunting' | 'pendidikan' | 'perkawinan'>('usia');
+  const [activeTab, setActiveTab] = useState<'rwrt' | 'dataUmum' | 'usia' | 'mata' | 'pertumbuhan' | 'agama' | 'stunting' | 'pendidikan' | 'perkawinan' | 'mutasi'>('mutasi');
   const [loading, setLoading] = useState(true);
 
   // Data states
@@ -56,8 +88,44 @@ export default function AdminKependudukanPage() {
   const [stuntingList, setStuntingList] = useState<StuntingItem[]>([]);
   const [pendidikanList, setPendidikanList] = useState<JsonStatItem[]>([]);
   const [perkawinanList, setPerkawinanList] = useState<JsonStatItem[]>([]);
+  const [rwrtList, setRwrtList] = useState<RwItem[]>([]);
+  const [dataUmumList, setDataUmumList] = useState<DataUmumItem[]>([]);
+  const [mutasiList, setMutasiList] = useState<MutasiItem[]>([]);
+
   const [profilId, setProfilId] = useState<number | null>(null);
   const [rawMeta, setRawMeta] = useState<any>({});
+
+  // Modals state: Data Umum
+  const [showDataUmumModal, setShowDataUmumModal] = useState(false);
+  const [editDataUmum, setEditDataUmum] = useState<DataUmumItem | null>(null);
+  const [duIcon, setDuIcon] = useState('📍');
+  const [duKeterangan, setDuKeterangan] = useState('');
+  const [duJumlah, setDuJumlah] = useState('');
+
+  // Modals state: RW/RT
+  const [showRwModal, setShowRwModal] = useState(false);
+  const [editRwIdx, setEditRwIdx] = useState<number | null>(null);
+  const [rwNama, setRwNama] = useState('');
+  const [rwKetua, setRwKetua] = useState('');
+  const [rwRtListStr, setRwRtListStr] = useState('');
+
+  // Modals state: Mutasi Bulanan
+  const [showMutasiModal, setShowMutasiModal] = useState(false);
+  const [editMutasiIdx, setEditMutasiIdx] = useState<number | null>(null);
+  const [mutBulan, setMutBulan] = useState('Februari');
+  const [mutTahun, setMutTahun] = useState(2026);
+  const [mutLuas, setMutLuas] = useState('301 Km²');
+  const [mutKk, setMutKk] = useState(1127);
+  const [mutAwalL, setMutAwalL] = useState(1873);
+  const [mutAwalP, setMutAwalP] = useState(1821);
+  const [mutLahirL, setMutLahirL] = useState(2);
+  const [mutLahirP, setMutLahirP] = useState(3);
+  const [mutMatiL, setMutMatiL] = useState(0);
+  const [mutMatiP, setMutMatiP] = useState(3);
+  const [mutDatangL, setMutDatangL] = useState(0);
+  const [mutDatangP, setMutDatangP] = useState(0);
+  const [mutPindahL, setMutPindahL] = useState(3);
+  const [mutPindahP, setMutPindahP] = useState(2);
 
   const [showPendidikanModal, setShowPendidikanModal] = useState(false);
   const [editPendidikan, setEditPendidikan] = useState<JsonStatItem | null>(null);
@@ -68,7 +136,6 @@ export default function AdminKependudukanPage() {
   const [editPerkawinan, setEditPerkawinan] = useState<JsonStatItem | null>(null);
   const [namaPerkawinan, setNamaPerkawinan] = useState('');
   const [jumlahPerkawinan, setJumlahPerkawinan] = useState(0);
-
 
   const [showUsiaModal, setShowUsiaModal] = useState(false);
   const [editUsia, setEditUsia] = useState<UsiaItem | null>(null);
@@ -166,13 +233,238 @@ export default function AdminKependudukanPage() {
       } else {
         setPerkawinanList([]);
       }
+
+      if (profilData.struktur_rw && Array.isArray(profilData.struktur_rw) && profilData.struktur_rw.length > 0) {
+        setRwrtList(profilData.struktur_rw);
+      } else {
+        setRwrtList([]);
+      }
+
+      if (profilData.data_umum && Array.isArray(profilData.data_umum) && profilData.data_umum.length > 0) {
+        setDataUmumList(profilData.data_umum);
+      } else {
+        setDataUmumList([]);
+      }
+
+      if (profilData.mutasi_bulanan && Array.isArray(profilData.mutasi_bulanan) && profilData.mutasi_bulanan.length > 0) {
+        setMutasiList(profilData.mutasi_bulanan);
+      } else {
+        // Fallback default Februari 2026 jika belum ada
+        setMutasiList([
+          {
+            bulan: 'Februari',
+            tahun: 2026,
+            periode: 'Februari 2026',
+            luas_wilayah: '301 Km²',
+            jumlah_kk: 1127,
+            awal_bulan: { total: 3694, laki_laki: 1873, perempuan: 1821 },
+            kelahiran: { total: 5, laki_laki: 2, perempuan: 3 },
+            kematian: { total: 3, laki_laki: 0, perempuan: 3 },
+            pendatang: { total: 0, laki_laki: 0, perempuan: 0 },
+            pindah: { total: 5, laki_laki: 3, perempuan: 2 },
+            akhir_bulan: { total: 3691, laki_laki: 1872, perempuan: 1819 },
+          },
+        ]);
+      }
     } else {
       setPendidikanList([]);
       setPerkawinanList([]);
+      setRwrtList([]);
+      setDataUmumList([]);
+      setMutasiList([
+        {
+          bulan: 'Februari',
+          tahun: 2026,
+          periode: 'Februari 2026',
+          luas_wilayah: '301 Km²',
+          jumlah_kk: 1127,
+          awal_bulan: { total: 3694, laki_laki: 1873, perempuan: 1821 },
+          kelahiran: { total: 5, laki_laki: 2, perempuan: 3 },
+          kematian: { total: 3, laki_laki: 0, perempuan: 3 },
+          pendatang: { total: 0, laki_laki: 0, perempuan: 0 },
+          pindah: { total: 5, laki_laki: 3, perempuan: 2 },
+          akhir_bulan: { total: 3691, laki_laki: 1872, perempuan: 1819 },
+        },
+      ]);
     }
 
     setLoading(false);
   };
+
+  // ─── HANDLERS DATA UMUM ──────────────────────────────────────────────────────
+  const handleOpenDataUmumModal = (item?: DataUmumItem) => {
+    if (item) {
+      setEditDataUmum(item);
+      setDuIcon(item.icon || '📍');
+      setDuKeterangan(item.keterangan || '');
+      setDuJumlah(item.jumlah || '');
+    } else {
+      setEditDataUmum(null);
+      setDuIcon('📍');
+      setDuKeterangan('');
+      setDuJumlah('');
+    }
+    setShowDataUmumModal(true);
+  };
+
+  const handleSaveDataUmum = async (e: React.FormEvent) => {
+    e.preventDefault();
+    let updatedList: DataUmumItem[] = [];
+    if (editDataUmum) {
+      updatedList = dataUmumList.map((d) => (d.id === editDataUmum.id ? { ...d, icon: duIcon, keterangan: duKeterangan, jumlah: duJumlah } : d));
+    } else {
+      const newId = dataUmumList.length > 0 ? Math.max(...dataUmumList.map((d) => d.id)) + 1 : 1;
+      updatedList = [...dataUmumList, { id: newId, icon: duIcon, keterangan: duKeterangan, jumlah: duJumlah }];
+    }
+    const newMeta = { ...rawMeta, data_umum: updatedList };
+    await saveProfilMeta(newMeta);
+    setDataUmumList(updatedList);
+    setShowDataUmumModal(false);
+  };
+
+  const handleDeleteDataUmum = async (id: number) => {
+    if (!confirm('Apakah Anda yakin ingin menghapus data umum ini?')) return;
+    const updatedList = dataUmumList.filter((d) => d.id !== id);
+    const newMeta = { ...rawMeta, data_umum: updatedList };
+    await saveProfilMeta(newMeta);
+    setDataUmumList(updatedList);
+  };
+
+  // ─── HANDLERS STRUKTUR RW/RT ─────────────────────────────────────────────────
+  const handleOpenRwModal = (idx?: number) => {
+    if (idx !== undefined && idx !== null && rwrtList[idx]) {
+      const item = rwrtList[idx];
+      setEditRwIdx(idx);
+      setRwNama(item.rw || '');
+      setRwKetua(item.ketua_rw || '');
+      const rtStr = item.rt_list ? item.rt_list.map((r) => `${r.rt}:${r.ketua_rt}`).join('\n') : '';
+      setRwRtListStr(rtStr);
+    } else {
+      setEditRwIdx(null);
+      setRwNama('');
+      setRwKetua('');
+      setRwRtListStr('');
+    }
+    setShowRwModal(true);
+  };
+
+  const handleSaveRw = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const rtLines = rwRtListStr.split('\n').map((l) => l.trim()).filter(Boolean);
+    const rt_list = rtLines.map((line) => {
+      const parts = line.split(':');
+      return { rt: parts[0]?.trim() || '', ketua_rt: parts[1]?.trim() || '' };
+    });
+
+    const newItem: RwItem = { rw: rwNama, ketua_rw: rwKetua, rt_list };
+    let updatedList = [...rwrtList];
+    if (editRwIdx !== null) {
+      updatedList[editRwIdx] = newItem;
+    } else {
+      updatedList.push(newItem);
+    }
+    const newMeta = { ...rawMeta, struktur_rw: updatedList };
+    await saveProfilMeta(newMeta);
+    setRwrtList(updatedList);
+    setShowRwModal(false);
+  };
+
+  const handleDeleteRw = async (idx: number) => {
+    if (!confirm('Apakah Anda yakin ingin menghapus data RW ini?')) return;
+    const updatedList = rwrtList.filter((_, i) => i !== idx);
+    const newMeta = { ...rawMeta, struktur_rw: updatedList };
+    await saveProfilMeta(newMeta);
+    setRwrtList(updatedList);
+  };
+
+  // ─── HANDLERS MUTASI BULANAN ──────────────────────────────────────────────────
+  const handleOpenMutasiModal = (idx?: number) => {
+    if (idx !== undefined && idx !== null && mutasiList[idx]) {
+      const item = mutasiList[idx];
+      setEditMutasiIdx(idx);
+      setMutBulan(item.bulan || 'Februari');
+      setMutTahun(item.tahun || 2026);
+      setMutLuas(item.luas_wilayah || '301 Km²');
+      setMutKk(item.jumlah_kk || 1127);
+
+      setMutAwalL(item.awal_bulan?.laki_laki || 0);
+      setMutAwalP(item.awal_bulan?.perempuan || 0);
+      setMutLahirL(item.kelahiran?.laki_laki || 0);
+      setMutLahirP(item.kelahiran?.perempuan || 0);
+      setMutMatiL(item.kematian?.laki_laki || 0);
+      setMutMatiP(item.kematian?.perempuan || 0);
+      setMutDatangL(item.pendatang?.laki_laki || 0);
+      setMutDatangP(item.pendatang?.perempuan || 0);
+      setMutPindahL(item.pindah?.laki_laki || 0);
+      setMutPindahP(item.pindah?.perempuan || 0);
+    } else {
+      setEditMutasiIdx(null);
+      setMutBulan('Februari');
+      setMutTahun(2026);
+      setMutLuas('301 Km²');
+      setMutKk(1127);
+
+      setMutAwalL(1873);
+      setMutAwalP(1821);
+      setMutLahirL(2);
+      setMutLahirP(3);
+      setMutMatiL(0);
+      setMutMatiP(3);
+      setMutDatangL(0);
+      setMutDatangP(0);
+      setMutPindahL(3);
+      setMutPindahP(2);
+    }
+    setShowMutasiModal(true);
+  };
+
+  const handleSaveMutasi = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const awalTotal = mutAwalL + mutAwalP;
+    const lahirTotal = mutLahirL + mutLahirP;
+    const matiTotal = mutMatiL + mutMatiP;
+    const datangTotal = mutDatangL + mutDatangP;
+    const pindahTotal = mutPindahL + mutPindahP;
+
+    const akhirL = mutAwalL + mutLahirL - mutMatiL + mutDatangL - mutPindahL;
+    const akhirP = mutAwalP + mutLahirP - mutMatiP + mutDatangP - mutPindahP;
+    const akhirTotal = akhirL + akhirP;
+
+    const newItem: MutasiItem = {
+      bulan: mutBulan,
+      tahun: mutTahun,
+      periode: `${mutBulan} ${mutTahun}`,
+      luas_wilayah: mutLuas,
+      jumlah_kk: mutKk,
+      awal_bulan: { total: awalTotal, laki_laki: mutAwalL, perempuan: mutAwalP },
+      kelahiran: { total: lahirTotal, laki_laki: mutLahirL, perempuan: mutLahirP },
+      kematian: { total: matiTotal, laki_laki: mutMatiL, perempuan: mutMatiP },
+      pendatang: { total: datangTotal, laki_laki: mutDatangL, perempuan: mutDatangP },
+      pindah: { total: pindahTotal, laki_laki: mutPindahL, perempuan: mutPindahP },
+      akhir_bulan: { total: akhirTotal, laki_laki: akhirL, perempuan: akhirP },
+    };
+
+    let updatedList = [...mutasiList];
+    if (editMutasiIdx !== null) {
+      updatedList[editMutasiIdx] = newItem;
+    } else {
+      updatedList.push(newItem);
+    }
+
+    const newMeta = { ...rawMeta, mutasi_bulanan: updatedList };
+    await saveProfilMeta(newMeta);
+    setMutasiList(updatedList);
+    setShowMutasiModal(false);
+  };
+
+  const handleDeleteMutasi = async (idx: number) => {
+    if (!confirm('Apakah Anda yakin ingin menghapus data mutasi bulan ini?')) return;
+    const updatedList = mutasiList.filter((_, i) => i !== idx);
+    const newMeta = { ...rawMeta, mutasi_bulanan: updatedList };
+    await saveProfilMeta(newMeta);
+    setMutasiList(updatedList);
+  };
+
 
   // ─── HANDLERS KELOMPOK USIA ──────────────────────────────────────────────────
   const handleOpenUsiaModal = (item?: UsiaItem) => {

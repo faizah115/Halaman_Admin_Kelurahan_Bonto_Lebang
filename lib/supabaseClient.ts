@@ -81,9 +81,9 @@ export async function getDataUmum() {
     return profil.data_umum;
   }
   return [
-    { id: 1, keterangan: 'Luas Wilayah', jumlah: '301 Ha', icon: '🗺️' },
-    { id: 2, keterangan: 'Jumlah Penduduk', jumlah: '3.700 Jiwa', icon: '👥' },
-    { id: 3, keterangan: 'Jumlah KK', jumlah: '1.128 – 1.129 KK', icon: '🏠' },
+    { id: 1, keterangan: 'Luas Wilayah', jumlah: '301 Km²', icon: '🗺️' },
+    { id: 2, keterangan: 'Jumlah Penduduk', jumlah: '3.691 Jiwa', icon: '👥' },
+    { id: 3, keterangan: 'Jumlah KK', jumlah: '1.127 KK', icon: '🏠' },
     { id: 4, keterangan: 'Jumlah KK Miskin', jumlah: '278 KK', icon: '📋' },
   ];
 }
@@ -289,11 +289,52 @@ export async function getStunting() {
   return data;
 }
 
+export const defaultMutasiBulanan = [
+  {
+    bulan: 'Februari',
+    tahun: 2026,
+    periode: 'Februari 2026',
+    luas_wilayah: '301 Km²',
+    jumlah_kk: 1127,
+    awal_bulan: {
+      total: 3694,
+      laki_laki: 1873,
+      perempuan: 1821,
+    },
+    kelahiran: {
+      total: 5,
+      laki_laki: 2,
+      perempuan: 3,
+    },
+    kematian: {
+      total: 3,
+      laki_laki: 0,
+      perempuan: 3,
+    },
+    pendatang: {
+      total: 0,
+      laki_laki: 0,
+      perempuan: 0,
+    },
+    pindah: {
+      total: 5,
+      laki_laki: 3,
+      perempuan: 2,
+    },
+    akhir_bulan: {
+      total: 3691,
+      laki_laki: 1872,
+      perempuan: 1819,
+    },
+  },
+];
+
 export async function getMutasiBulanan() {
   const profil = await getProfil();
   const list: any[] = profil?.mutasi_bulanan ?? [];
-  // Kembalikan diurutkan dari bulan pertama (Januari -> Desember, tahun lama -> baru)
-  return [...list].sort((a, b) => {
+  const resultList = (list && list.length > 0) ? list : defaultMutasiBulanan;
+
+  return [...resultList].sort((a, b) => {
     if (a.tahun !== b.tahun) return a.tahun - b.tahun;
     const bulanOrder: Record<string, number> = {
       Januari: 1, Februari: 2, Maret: 3, April: 4, Mei: 5, Juni: 6,
@@ -302,6 +343,7 @@ export async function getMutasiBulanan() {
     return (bulanOrder[a.bulan] ?? 0) - (bulanOrder[b.bulan] ?? 0);
   });
 }
+
 
 export const defaultPotensiList: any[] = [];
 
