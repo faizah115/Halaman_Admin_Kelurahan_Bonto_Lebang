@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { supabase, getMataPencaharian, getStatistikAgama, getProfil } from '@/lib/supabaseClient';
+import { supabase, getMataPencaharian, getStatistikAgama, getProfil, getMutasiBulanan } from '@/lib/supabaseClient';
 
 type UsiaItem = {
   id: number;
@@ -247,47 +247,17 @@ export default function AdminKependudukanPage() {
         setDataUmumList([]);
       }
 
-      if (profilData.mutasi_bulanan && Array.isArray(profilData.mutasi_bulanan) && profilData.mutasi_bulanan.length > 0) {
-        setMutasiList(profilData.mutasi_bulanan);
-      } else {
-        // Fallback default Februari 2026 jika belum ada
-        setMutasiList([
-          {
-            bulan: 'Februari',
-            tahun: 2026,
-            periode: 'Februari 2026',
-            luas_wilayah: '301 Km²',
-            jumlah_kk: 1127,
-            awal_bulan: { total: 3694, laki_laki: 1873, perempuan: 1821 },
-            kelahiran: { total: 5, laki_laki: 2, perempuan: 3 },
-            kematian: { total: 3, laki_laki: 0, perempuan: 3 },
-            pendatang: { total: 0, laki_laki: 0, perempuan: 0 },
-            pindah: { total: 5, laki_laki: 3, perempuan: 2 },
-            akhir_bulan: { total: 3691, laki_laki: 1872, perempuan: 1819 },
-          },
-        ]);
-      }
+      // Gunakan getMutasiBulanan agar otomatis merge DB + defaultMutasiBulanan
     } else {
       setPendidikanList([]);
       setPerkawinanList([]);
       setRwrtList([]);
       setDataUmumList([]);
-      setMutasiList([
-        {
-          bulan: 'Februari',
-          tahun: 2026,
-          periode: 'Februari 2026',
-          luas_wilayah: '301 Km²',
-          jumlah_kk: 1127,
-          awal_bulan: { total: 3694, laki_laki: 1873, perempuan: 1821 },
-          kelahiran: { total: 5, laki_laki: 2, perempuan: 3 },
-          kematian: { total: 3, laki_laki: 0, perempuan: 3 },
-          pendatang: { total: 0, laki_laki: 0, perempuan: 0 },
-          pindah: { total: 5, laki_laki: 3, perempuan: 2 },
-          akhir_bulan: { total: 3691, laki_laki: 1872, perempuan: 1819 },
-        },
-      ]);
     }
+
+    // Muat semua data mutasi (merge DB + default) — pakai fungsi terpusat
+    const semuaMutasi = await getMutasiBulanan();
+    setMutasiList(semuaMutasi as MutasiItem[]);
 
     setLoading(false);
   };
