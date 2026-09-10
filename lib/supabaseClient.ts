@@ -484,18 +484,36 @@ export const defaultMutasiBulanan = [
 
 export async function getMutasiBulanan() {
   const profil = await getProfil();
-  const list: any[] = profil?.mutasi_bulanan ?? [];
-  const resultList = (list && list.length > 0) ? list : defaultMutasiBulanan;
+  const fromDB: any[] = profil?.mutasi_bulanan ?? [];
 
-  return [...resultList].sort((a, b) => {
+  // Buat map dari data database (key: "Bulan-Tahun")
+  const dbMap = new Map<string, any>();
+  for (const item of fromDB) {
+    if (item?.bulan && item?.tahun) {
+      dbMap.set(`${item.bulan}-${item.tahun}`, item);
+    }
+  }
+
+  // Gabungkan: data DB diutamakan, default mengisi bulan yang belum ada di DB
+  const merged: any[] = [...fromDB];
+  for (const def of defaultMutasiBulanan) {
+    const key = `${def.bulan}-${def.tahun}`;
+    if (!dbMap.has(key)) {
+      merged.push(def);
+    }
+  }
+
+  const bulanOrder: Record<string, number> = {
+    Januari: 1, Februari: 2, Maret: 3, April: 4, Mei: 5, Juni: 6,
+    Juli: 7, Agustus: 8, September: 9, Oktober: 10, November: 11, Desember: 12,
+  };
+
+  return merged.sort((a, b) => {
     if (a.tahun !== b.tahun) return a.tahun - b.tahun;
-    const bulanOrder: Record<string, number> = {
-      Januari: 1, Februari: 2, Maret: 3, April: 4, Mei: 5, Juni: 6,
-      Juli: 7, Agustus: 8, September: 9, Oktober: 10, November: 11, Desember: 12,
-    };
     return (bulanOrder[a.bulan] ?? 0) - (bulanOrder[b.bulan] ?? 0);
   });
 }
+
 
 
 export const defaultPotensiList: any[] = [];
