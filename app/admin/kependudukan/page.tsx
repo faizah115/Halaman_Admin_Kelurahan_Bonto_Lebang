@@ -91,6 +91,7 @@ export default function AdminKependudukanPage() {
   const [rwrtList, setRwrtList] = useState<RwItem[]>([]);
   const [dataUmumList, setDataUmumList] = useState<DataUmumItem[]>([]);
   const [mutasiList, setMutasiList] = useState<MutasiItem[]>([]);
+  const [selectedMutasiIdx, setSelectedMutasiIdx] = useState<number>(0);
 
   const [profilId, setProfilId] = useState<number | null>(null);
   const [rawMeta, setRawMeta] = useState<any>({});
@@ -447,8 +448,10 @@ export default function AdminKependudukanPage() {
     let updatedList = [...mutasiList];
     if (editMutasiIdx !== null) {
       updatedList[editMutasiIdx] = newItem;
+      setSelectedMutasiIdx(editMutasiIdx);
     } else {
       updatedList.push(newItem);
+      setSelectedMutasiIdx(updatedList.length - 1);
     }
 
     const newMeta = { ...rawMeta, mutasi_bulanan: updatedList };
@@ -463,6 +466,7 @@ export default function AdminKependudukanPage() {
     const newMeta = { ...rawMeta, mutasi_bulanan: updatedList };
     await saveProfilMeta(newMeta);
     setMutasiList(updatedList);
+    setSelectedMutasiIdx((prev) => Math.max(0, Math.min(prev, updatedList.length - 1)));
   };
 
 
@@ -1207,49 +1211,222 @@ export default function AdminKependudukanPage() {
 
       {/* TAB: MUTASI PENDUDUK BULANAN */}
       {activeTab === 'mutasi' && (
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="font-bold text-lg text-gray-800 dark:text-white">Mutasi Penduduk Bulanan</h2>
-            <button
-              onClick={() => handleOpenMutasiModal()}
-              className="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold px-3 py-2 rounded-xl transition"
-            >
-              ➕ Tambah Data Bulan
-            </button>
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 space-y-6">
+          {/* Header & Controls */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-100 dark:border-gray-700 pb-4">
+            <div>
+              <h2 className="font-bold text-xl text-gray-800 dark:text-white flex items-center gap-2">
+                <span>📋</span> Parameter & Indikator Mutasi Penduduk
+              </h2>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                Input dan kelola rincian data indikator mutasi kependudukan bulanan yang diintegrasikan ke situs publik.
+              </p>
+            </div>
+            <div className="flex items-center gap-2 flex-wrap">
+              {mutasiList.length > 0 && (
+                <select
+                  value={selectedMutasiIdx}
+                  onChange={(e) => setSelectedMutasiIdx(Number(e.target.value))}
+                  className="bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl px-3 py-2 text-xs font-semibold text-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500"
+                >
+                  {mutasiList.map((m, idx) => (
+                    <option key={idx} value={idx}>
+                      Periode: {m.periode || `${m.bulan} ${m.tahun}`}
+                    </option>
+                  ))}
+                </select>
+              )}
+              <button
+                onClick={() => handleOpenMutasiModal()}
+                className="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold px-4 py-2 rounded-xl transition flex items-center gap-1.5 shadow-sm"
+              >
+                <span>➕</span> Input Data Bulan Baru
+              </button>
+            </div>
           </div>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm text-left">
-              <thead className="bg-gray-50 dark:bg-gray-700/50 text-gray-700 dark:text-gray-300 font-semibold border-b border-gray-200 dark:border-gray-700">
-                <tr>
-                  <th className="px-4 py-3">Periode</th>
-                  <th className="px-4 py-3 text-right">Awal Bulan</th>
-                  <th className="px-4 py-3 text-right">Lahir</th>
-                  <th className="px-4 py-3 text-right">Mati</th>
-                  <th className="px-4 py-3 text-right">Datang</th>
-                  <th className="px-4 py-3 text-right">Pindah</th>
-                  <th className="px-4 py-3 text-right">Akhir Bulan</th>
-                  <th className="px-4 py-3 text-right">Aksi</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
-                {mutasiList.map((m, idx) => (
-                  <tr key={idx}>
-                    <td className="px-4 py-3 font-bold text-gray-800 dark:text-white">{m.periode}</td>
-                    <td className="px-4 py-3 text-right text-blue-600">{m.awal_bulan.total.toLocaleString('id-ID')}</td>
-                    <td className="px-4 py-3 text-right text-emerald-600">+{m.kelahiran.total}</td>
-                    <td className="px-4 py-3 text-right text-rose-600">-{m.kematian.total}</td>
-                    <td className="px-4 py-3 text-right text-indigo-600">+{m.pendatang.total}</td>
-                    <td className="px-4 py-3 text-right text-amber-600">-{m.pindah.total}</td>
-                    <td className="px-4 py-3 text-right font-bold text-gray-900 dark:text-white">{m.akhir_bulan.total.toLocaleString('id-ID')}</td>
-                    <td className="px-4 py-3 text-right space-x-2">
-                      <button onClick={() => handleOpenMutasiModal(idx)} className="text-xs text-amber-600 hover:underline">Edit</button>
-                      <button onClick={() => handleDeleteMutasi(idx)} className="text-xs text-rose-600 hover:underline">Hapus</button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+
+          {/* Tampilan Tabel Parameter / Indikator (Sesuai Permintaan) */}
+          {mutasiList.length > 0 && mutasiList[selectedMutasiIdx] ? (() => {
+            const cur = mutasiList[selectedMutasiIdx];
+            return (
+              <div className="bg-slate-50 dark:bg-gray-900/60 rounded-2xl p-5 border border-slate-200 dark:border-gray-700 shadow-xs space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div>
+                    <span className="text-xs font-bold text-indigo-700 dark:text-indigo-300 bg-indigo-100 dark:bg-indigo-950/80 px-3 py-1.5 rounded-full uppercase tracking-wider">
+                      📊 Data yang Berhasil Diintegrasikan ({cur.periode || `${cur.bulan} ${cur.tahun}`})
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => handleOpenMutasiModal(selectedMutasiIdx)}
+                      className="bg-amber-500 hover:bg-amber-600 text-white text-xs font-semibold px-3 py-1.5 rounded-xl transition flex items-center gap-1 shadow-sm"
+                    >
+                      ✏️ Edit Parameter
+                    </button>
+                    <button
+                      onClick={() => handleDeleteMutasi(selectedMutasiIdx)}
+                      className="bg-rose-500 hover:bg-rose-600 text-white text-xs font-semibold px-3 py-1.5 rounded-xl transition flex items-center gap-1 shadow-sm"
+                    >
+                      🗑️ Hapus Bulan Ini
+                    </button>
+                  </div>
+                </div>
+
+                <div className="overflow-x-auto rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm">
+                  <table className="w-full text-sm text-left">
+                    <thead>
+                      <tr className="bg-[#7a1f2b] text-white">
+                        <th className="px-5 py-3.5 font-bold border-b border-rose-900 w-1/2">Parameter / Indikator</th>
+                        <th className="px-5 py-3.5 font-bold border-b border-rose-900 w-1/2">Nilai / Rincian</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
+                      <tr className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                        <td className="px-5 py-3.5 font-semibold text-gray-800 dark:text-gray-200">
+                          Luas Wilayah
+                        </td>
+                        <td className="px-5 py-3.5 font-bold text-gray-900 dark:text-white">
+                          {cur.luas_wilayah || '301 Km²'}
+                        </td>
+                      </tr>
+                      <tr className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                        <td className="px-5 py-3.5 font-semibold text-gray-800 dark:text-gray-200">
+                          Jumlah Kartu Keluarga (KK)
+                        </td>
+                        <td className="px-5 py-3.5 font-bold text-indigo-600 dark:text-indigo-400">
+                          {(cur.jumlah_kk ?? 1127).toLocaleString('id-ID')} KK
+                        </td>
+                      </tr>
+                      <tr className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                        <td className="px-5 py-3.5 font-semibold text-gray-800 dark:text-gray-200">
+                          Penduduk Awal Bulan ({cur.bulan} {cur.tahun})
+                        </td>
+                        <td className="px-5 py-3.5 text-gray-900 dark:text-gray-100">
+                          <strong className="text-sky-600 dark:text-sky-400">{(cur.awal_bulan?.total ?? 0).toLocaleString('id-ID')} jiwa</strong>{' '}
+                          <span className="text-xs text-gray-500 dark:text-gray-400 font-medium">
+                            ({(cur.awal_bulan?.laki_laki ?? 0).toLocaleString('id-ID')} Laki-laki, {(cur.awal_bulan?.perempuan ?? 0).toLocaleString('id-ID')} Perempuan)
+                          </span>
+                        </td>
+                      </tr>
+                      <tr className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                        <td className="px-5 py-3.5 font-semibold text-emerald-700 dark:text-emerald-400">
+                          Kelahiran (+)
+                        </td>
+                        <td className="px-5 py-3.5 text-emerald-700 dark:text-emerald-400">
+                          <strong>+{cur.kelahiran?.total ?? 0} jiwa</strong>{' '}
+                          <span className="text-xs text-emerald-600/80 dark:text-emerald-400/80 font-medium">
+                            ({cur.kelahiran?.laki_laki ?? 0} Laki-laki, {cur.kelahiran?.perempuan ?? 0} Perempuan)
+                          </span>
+                        </td>
+                      </tr>
+                      <tr className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                        <td className="px-5 py-3.5 font-semibold text-rose-700 dark:text-rose-400">
+                          Kematian (-)
+                        </td>
+                        <td className="px-5 py-3.5 text-rose-700 dark:text-rose-400">
+                          <strong>-{cur.kematian?.total ?? 0} jiwa</strong>{' '}
+                          <span className="text-xs text-rose-600/80 dark:text-rose-400/80 font-medium">
+                            ({cur.kematian?.laki_laki ?? 0} Laki-laki, {cur.kematian?.perempuan ?? 0} Perempuan)
+                          </span>
+                        </td>
+                      </tr>
+                      <tr className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                        <td className="px-5 py-3.5 font-semibold text-blue-700 dark:text-blue-400">
+                          Pendatang (+)
+                        </td>
+                        <td className="px-5 py-3.5 text-blue-700 dark:text-blue-400">
+                          <strong>+{cur.pendatang?.total ?? 0} jiwa</strong>{' '}
+                          <span className="text-xs text-blue-600/80 dark:text-blue-400/80 font-medium">
+                            ({cur.pendatang?.laki_laki ?? 0} Laki-laki, {cur.pendatang?.perempuan ?? 0} Perempuan)
+                          </span>
+                        </td>
+                      </tr>
+                      <tr className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                        <td className="px-5 py-3.5 font-semibold text-amber-700 dark:text-amber-400">
+                          Pindah (-)
+                        </td>
+                        <td className="px-5 py-3.5 text-amber-700 dark:text-amber-400">
+                          <strong>-{cur.pindah?.total ?? 0} jiwa</strong>{' '}
+                          <span className="text-xs text-amber-600/80 dark:text-amber-400/80 font-medium">
+                            ({cur.pindah?.laki_laki ?? 0} Laki-laki, {cur.pindah?.perempuan ?? 0} Perempuan)
+                          </span>
+                        </td>
+                      </tr>
+                      <tr className="bg-emerald-50 dark:bg-emerald-950/40 font-bold">
+                        <td className="px-5 py-4 text-emerald-950 dark:text-emerald-200">
+                          Penduduk Akhir Bulan ({cur.bulan} {cur.tahun})
+                        </td>
+                        <td className="px-5 py-4 text-emerald-900 dark:text-emerald-100">
+                          <span className="text-base font-extrabold text-[#7a1f2b] dark:text-rose-400">
+                            {(cur.akhir_bulan?.total ?? 0).toLocaleString('id-ID')} jiwa
+                          </span>{' '}
+                          <span className="text-xs font-semibold text-emerald-700 dark:text-emerald-300">
+                            ({(cur.akhir_bulan?.laki_laki ?? 0).toLocaleString('id-ID')} Laki-laki, {(cur.akhir_bulan?.perempuan ?? 0).toLocaleString('id-ID')} Perempuan)
+                          </span>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            );
+          })() : (
+            <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+              Belum ada data mutasi penduduk. Klik "Input Data Bulan Baru" untuk menambah data.
+            </div>
+          )}
+
+          {/* Tabel Riwayat Seluruh Bulan */}
+          {mutasiList.length > 0 && (
+            <div className="pt-2">
+              <h3 className="font-bold text-sm text-gray-700 dark:text-gray-300 mb-3 flex items-center gap-1.5">
+                <span>🗓️</span> Riwayat Seluruh Periode Mutasi Penduduk
+              </h3>
+              <div className="overflow-x-auto rounded-xl border border-gray-200 dark:border-gray-700">
+                <table className="w-full text-xs text-left">
+                  <thead className="bg-gray-100 dark:bg-gray-700/60 text-gray-700 dark:text-gray-300 font-semibold">
+                    <tr>
+                      <th className="px-3.5 py-2.5">Periode</th>
+                      <th className="px-3.5 py-2.5">Luas</th>
+                      <th className="px-3.5 py-2.5">KK</th>
+                      <th className="px-3.5 py-2.5 text-right">Awal Bulan</th>
+                      <th className="px-3.5 py-2.5 text-right">Lahir</th>
+                      <th className="px-3.5 py-2.5 text-right">Mati</th>
+                      <th className="px-3.5 py-2.5 text-right">Datang</th>
+                      <th className="px-3.5 py-2.5 text-right">Pindah</th>
+                      <th className="px-3.5 py-2.5 text-right">Akhir Bulan</th>
+                      <th className="px-3.5 py-2.5 text-right">Aksi</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
+                    {mutasiList.map((m, idx) => (
+                      <tr
+                        key={idx}
+                        className={`hover:bg-indigo-50/40 dark:hover:bg-indigo-950/30 transition cursor-pointer ${
+                          selectedMutasiIdx === idx ? 'bg-indigo-50/70 dark:bg-indigo-950/50 font-medium' : ''
+                        }`}
+                        onClick={() => setSelectedMutasiIdx(idx)}
+                      >
+                        <td className="px-3.5 py-2.5 font-bold text-gray-800 dark:text-white">{m.periode || `${m.bulan} ${m.tahun}`}</td>
+                        <td className="px-3.5 py-2.5 text-gray-600 dark:text-gray-300">{m.luas_wilayah || '301 Km²'}</td>
+                        <td className="px-3.5 py-2.5 text-gray-600 dark:text-gray-300">{(m.jumlah_kk ?? 1127).toLocaleString('id-ID')}</td>
+                        <td className="px-3.5 py-2.5 text-right text-sky-600 dark:text-sky-400">{(m.awal_bulan?.total ?? 0).toLocaleString('id-ID')}</td>
+                        <td className="px-3.5 py-2.5 text-right text-emerald-600">+{m.kelahiran?.total ?? 0}</td>
+                        <td className="px-3.5 py-2.5 text-right text-rose-600">-{m.kematian?.total ?? 0}</td>
+                        <td className="px-3.5 py-2.5 text-right text-blue-600">+{m.pendatang?.total ?? 0}</td>
+                        <td className="px-3.5 py-2.5 text-right text-amber-600">-{m.pindah?.total ?? 0}</td>
+                        <td className="px-3.5 py-2.5 text-right font-bold text-gray-900 dark:text-white">{(m.akhir_bulan?.total ?? 0).toLocaleString('id-ID')}</td>
+                        <td className="px-3.5 py-2.5 text-right space-x-2" onClick={(e) => e.stopPropagation()}>
+                          <button onClick={() => handleOpenMutasiModal(idx)} className="text-amber-600 hover:underline font-semibold">Edit</button>
+                          <button onClick={() => handleDeleteMutasi(idx)} className="text-rose-600 hover:underline font-semibold">Hapus</button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
         </div>
       )}
 
@@ -1318,60 +1495,226 @@ export default function AdminKependudukanPage() {
       {/* MODAL MUTASI BULANAN */}
       {showMutasiModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm overflow-y-auto">
-          <div className="bg-white dark:bg-gray-800 rounded-2xl max-w-2xl w-full p-6 shadow-2xl my-4">
-            <h3 className="font-bold text-lg mb-4 text-gray-800 dark:text-white">{editMutasiIdx !== null ? 'Edit Mutasi Bulanan' : 'Tambah Mutasi Bulanan'}</h3>
-            <form onSubmit={handleSaveMutasi} className="space-y-4">
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="text-xs font-semibold">Bulan</label>
-                  <select value={mutBulan} onChange={e => setMutBulan(e.target.value)} className="w-full p-2 border rounded-xl dark:bg-gray-700 text-sm">
-                    {BULAN_LIST.map(b => <option key={b} value={b}>{b}</option>)}
-                  </select>
+          <div className="bg-white dark:bg-gray-800 rounded-3xl max-w-3xl w-full p-6 sm:p-8 shadow-2xl my-6 border border-gray-100 dark:border-gray-700">
+            <div className="flex items-center justify-between border-b border-gray-100 dark:border-gray-700 pb-4 mb-4">
+              <div>
+                <h3 className="font-bold text-xl text-gray-800 dark:text-white">
+                  {editMutasiIdx !== null ? '✏️ Edit Parameter Mutasi Penduduk' : '➕ Input Parameter Mutasi Penduduk Baru'}
+                </h3>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                  Lengkapi seluruh parameter indikator kependudukan bulanan Kelurahan Bonto Lebang.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowMutasiModal(false)}
+                className="text-gray-400 hover:text-gray-600 text-xl font-bold p-1"
+              >
+                ✕
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveMutasi} className="space-y-5">
+              {/* Periode & Wilayah */}
+              <div className="bg-gray-50 dark:bg-gray-900/50 p-4 rounded-2xl border border-gray-200/60 dark:border-gray-700 space-y-3">
+                <h4 className="text-xs font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-wider">
+                  1. Data Periode & Wilayah
+                </h4>
+                <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
+                  <div>
+                    <label className="text-xs font-semibold text-gray-700 dark:text-gray-300 block mb-1">Bulan</label>
+                    <select
+                      value={mutBulan}
+                      onChange={e => setMutBulan(e.target.value)}
+                      className="w-full p-2.5 border rounded-xl dark:bg-gray-700 text-sm font-semibold focus:ring-2 focus:ring-indigo-500"
+                    >
+                      {BULAN_LIST.map(b => <option key={b} value={b}>{b}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-xs font-semibold text-gray-700 dark:text-gray-300 block mb-1">Tahun</label>
+                    <input
+                      type="number"
+                      required
+                      value={mutTahun}
+                      onChange={e => setMutTahun(Number(e.target.value))}
+                      className="w-full p-2.5 border rounded-xl dark:bg-gray-700 text-sm font-semibold focus:ring-2 focus:ring-indigo-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs font-semibold text-gray-700 dark:text-gray-300 block mb-1">Luas Wilayah</label>
+                    <input
+                      type="text"
+                      required
+                      value={mutLuas}
+                      onChange={e => setMutLuas(e.target.value)}
+                      className="w-full p-2.5 border rounded-xl dark:bg-gray-700 text-sm focus:ring-2 focus:ring-indigo-500"
+                      placeholder="Contoh: 301 Km²"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs font-semibold text-gray-700 dark:text-gray-300 block mb-1">Jumlah KK</label>
+                    <input
+                      type="number"
+                      required
+                      value={mutKk}
+                      onChange={e => setMutKk(Number(e.target.value))}
+                      className="w-full p-2.5 border rounded-xl dark:bg-gray-700 text-sm focus:ring-2 focus:ring-indigo-500"
+                      placeholder="Contoh: 1127"
+                    />
+                  </div>
                 </div>
-                <div>
-                  <label className="text-xs font-semibold">Tahun</label>
-                  <input type="number" required value={mutTahun} onChange={e => setMutTahun(Number(e.target.value))} className="w-full p-2 border rounded-xl dark:bg-gray-700 text-sm" />
+              </div>
+
+              {/* Rincian Komponen Mutasi */}
+              <div className="space-y-3">
+                <h4 className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  2. Rincian Indikator Mutasi (Jiwa)
+                </h4>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {/* Penduduk Awal Bulan */}
+                  <div className="bg-sky-50/60 dark:bg-sky-950/30 p-3.5 rounded-2xl border border-sky-200 dark:border-sky-900">
+                    <div className="flex items-center justify-between mb-2">
+                      <label className="text-xs font-bold text-sky-800 dark:text-sky-300">👥 Penduduk Awal Bulan</label>
+                      <span className="text-xs font-bold text-sky-700 dark:text-sky-300 bg-sky-200/70 dark:bg-sky-900/60 px-2 py-0.5 rounded-md">
+                        Total: {(mutAwalL + mutAwalP).toLocaleString('id-ID')}
+                      </span>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <span className="text-[11px] text-gray-600 dark:text-gray-400">Laki-laki</span>
+                        <input type="number" required value={mutAwalL} onChange={e => setMutAwalL(Number(e.target.value))} className="w-full p-2 border rounded-xl dark:bg-gray-700 text-sm font-semibold" />
+                      </div>
+                      <div>
+                        <span className="text-[11px] text-gray-600 dark:text-gray-400">Perempuan</span>
+                        <input type="number" required value={mutAwalP} onChange={e => setMutAwalP(Number(e.target.value))} className="w-full p-2 border rounded-xl dark:bg-gray-700 text-sm font-semibold" />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Kelahiran */}
+                  <div className="bg-emerald-50/60 dark:bg-emerald-950/30 p-3.5 rounded-2xl border border-emerald-200 dark:border-emerald-900">
+                    <div className="flex items-center justify-between mb-2">
+                      <label className="text-xs font-bold text-emerald-800 dark:text-emerald-300">👶 Kelahiran (+)</label>
+                      <span className="text-xs font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-200/70 dark:bg-emerald-900/60 px-2 py-0.5 rounded-md">
+                        Total: +{mutLahirL + mutLahirP}
+                      </span>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <span className="text-[11px] text-gray-600 dark:text-gray-400">Laki-laki</span>
+                        <input type="number" value={mutLahirL} onChange={e => setMutLahirL(Number(e.target.value))} className="w-full p-2 border rounded-xl dark:bg-gray-700 text-sm font-semibold" />
+                      </div>
+                      <div>
+                        <span className="text-[11px] text-gray-600 dark:text-gray-400">Perempuan</span>
+                        <input type="number" value={mutLahirP} onChange={e => setMutLahirP(Number(e.target.value))} className="w-full p-2 border rounded-xl dark:bg-gray-700 text-sm font-semibold" />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Kematian */}
+                  <div className="bg-rose-50/60 dark:bg-rose-950/30 p-3.5 rounded-2xl border border-rose-200 dark:border-rose-900">
+                    <div className="flex items-center justify-between mb-2">
+                      <label className="text-xs font-bold text-rose-800 dark:text-rose-300">⚰️ Kematian (-)</label>
+                      <span className="text-xs font-bold text-rose-700 dark:text-rose-300 bg-rose-200/70 dark:bg-rose-900/60 px-2 py-0.5 rounded-md">
+                        Total: -{mutMatiL + mutMatiP}
+                      </span>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <span className="text-[11px] text-gray-600 dark:text-gray-400">Laki-laki</span>
+                        <input type="number" value={mutMatiL} onChange={e => setMutMatiL(Number(e.target.value))} className="w-full p-2 border rounded-xl dark:bg-gray-700 text-sm font-semibold" />
+                      </div>
+                      <div>
+                        <span className="text-[11px] text-gray-600 dark:text-gray-400">Perempuan</span>
+                        <input type="number" value={mutMatiP} onChange={e => setMutMatiP(Number(e.target.value))} className="w-full p-2 border rounded-xl dark:bg-gray-700 text-sm font-semibold" />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Pendatang */}
+                  <div className="bg-blue-50/60 dark:bg-blue-950/30 p-3.5 rounded-2xl border border-blue-200 dark:border-blue-900">
+                    <div className="flex items-center justify-between mb-2">
+                      <label className="text-xs font-bold text-blue-800 dark:text-blue-300">🛬 Pendatang (+)</label>
+                      <span className="text-xs font-bold text-blue-700 dark:text-blue-300 bg-blue-200/70 dark:bg-blue-900/60 px-2 py-0.5 rounded-md">
+                        Total: +{mutDatangL + mutDatangP}
+                      </span>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <span className="text-[11px] text-gray-600 dark:text-gray-400">Laki-laki</span>
+                        <input type="number" value={mutDatangL} onChange={e => setMutDatangL(Number(e.target.value))} className="w-full p-2 border rounded-xl dark:bg-gray-700 text-sm font-semibold" />
+                      </div>
+                      <div>
+                        <span className="text-[11px] text-gray-600 dark:text-gray-400">Perempuan</span>
+                        <input type="number" value={mutDatangP} onChange={e => setMutDatangP(Number(e.target.value))} className="w-full p-2 border rounded-xl dark:bg-gray-700 text-sm font-semibold" />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Pindah */}
+                  <div className="bg-amber-50/60 dark:bg-amber-950/30 p-3.5 rounded-2xl border border-amber-200 dark:border-amber-900 sm:col-span-2">
+                    <div className="flex items-center justify-between mb-2">
+                      <label className="text-xs font-bold text-amber-800 dark:text-amber-300">🛫 Pindah (-)</label>
+                      <span className="text-xs font-bold text-amber-700 dark:text-amber-300 bg-amber-200/70 dark:bg-amber-900/60 px-2 py-0.5 rounded-md">
+                        Total: -{mutPindahL + mutPindahP}
+                      </span>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <span className="text-[11px] text-gray-600 dark:text-gray-400">Laki-laki</span>
+                        <input type="number" value={mutPindahL} onChange={e => setMutPindahL(Number(e.target.value))} className="w-full p-2 border rounded-xl dark:bg-gray-700 text-sm font-semibold" />
+                      </div>
+                      <div>
+                        <span className="text-[11px] text-gray-600 dark:text-gray-400">Perempuan</span>
+                        <input type="number" value={mutPindahP} onChange={e => setMutPindahP(Number(e.target.value))} className="w-full p-2 border rounded-xl dark:bg-gray-700 text-sm font-semibold" />
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="text-xs font-semibold">Luas Wilayah</label>
-                  <input type="text" value={mutLuas} onChange={e => setMutLuas(e.target.value)} className="w-full p-2 border rounded-xl dark:bg-gray-700 text-sm" placeholder="Contoh: 301 Ha" />
-                </div>
-                <div>
-                  <label className="text-xs font-semibold">Jumlah KK</label>
-                  <input type="number" value={mutKk} onChange={e => setMutKk(Number(e.target.value))} className="w-full p-2 border rounded-xl dark:bg-gray-700 text-sm" />
-                </div>
-              </div>
-              <p className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Awal Bulan</p>
-              <div className="grid grid-cols-2 gap-3">
-                <div><label className="text-xs font-semibold">Laki-laki</label><input type="number" value={mutAwalL} onChange={e => setMutAwalL(Number(e.target.value))} className="w-full p-2 border rounded-xl dark:bg-gray-700 text-sm" /></div>
-                <div><label className="text-xs font-semibold">Perempuan</label><input type="number" value={mutAwalP} onChange={e => setMutAwalP(Number(e.target.value))} className="w-full p-2 border rounded-xl dark:bg-gray-700 text-sm" /></div>
-              </div>
-              <p className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Kelahiran (+)</p>
-              <div className="grid grid-cols-2 gap-3">
-                <div><label className="text-xs font-semibold">Laki-laki</label><input type="number" value={mutLahirL} onChange={e => setMutLahirL(Number(e.target.value))} className="w-full p-2 border rounded-xl dark:bg-gray-700 text-sm" /></div>
-                <div><label className="text-xs font-semibold">Perempuan</label><input type="number" value={mutLahirP} onChange={e => setMutLahirP(Number(e.target.value))} className="w-full p-2 border rounded-xl dark:bg-gray-700 text-sm" /></div>
-              </div>
-              <p className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Kematian (-)</p>
-              <div className="grid grid-cols-2 gap-3">
-                <div><label className="text-xs font-semibold">Laki-laki</label><input type="number" value={mutMatiL} onChange={e => setMutMatiL(Number(e.target.value))} className="w-full p-2 border rounded-xl dark:bg-gray-700 text-sm" /></div>
-                <div><label className="text-xs font-semibold">Perempuan</label><input type="number" value={mutMatiP} onChange={e => setMutMatiP(Number(e.target.value))} className="w-full p-2 border rounded-xl dark:bg-gray-700 text-sm" /></div>
-              </div>
-              <p className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Pendatang (+)</p>
-              <div className="grid grid-cols-2 gap-3">
-                <div><label className="text-xs font-semibold">Laki-laki</label><input type="number" value={mutDatangL} onChange={e => setMutDatangL(Number(e.target.value))} className="w-full p-2 border rounded-xl dark:bg-gray-700 text-sm" /></div>
-                <div><label className="text-xs font-semibold">Perempuan</label><input type="number" value={mutDatangP} onChange={e => setMutDatangP(Number(e.target.value))} className="w-full p-2 border rounded-xl dark:bg-gray-700 text-sm" /></div>
-              </div>
-              <p className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Pindah (-)</p>
-              <div className="grid grid-cols-2 gap-3">
-                <div><label className="text-xs font-semibold">Laki-laki</label><input type="number" value={mutPindahL} onChange={e => setMutPindahL(Number(e.target.value))} className="w-full p-2 border rounded-xl dark:bg-gray-700 text-sm" /></div>
-                <div><label className="text-xs font-semibold">Perempuan</label><input type="number" value={mutPindahP} onChange={e => setMutPindahP(Number(e.target.value))} className="w-full p-2 border rounded-xl dark:bg-gray-700 text-sm" /></div>
-              </div>
-              <p className="text-xs text-gray-400 italic">Akhir bulan dihitung otomatis: Awal + Lahir + Datang − Mati − Pindah</p>
-              <div className="flex justify-end gap-2 pt-3">
-                <button type="button" onClick={() => setShowMutasiModal(false)} className="px-3 py-1.5 bg-gray-100 text-xs rounded-xl">Batal</button>
-                <button type="submit" disabled={submitting} className="px-4 py-1.5 bg-indigo-600 text-white text-xs font-semibold rounded-xl">Simpan</button>
+
+              {/* Kalkulasi Otomatis Akhir Bulan */}
+              {(() => {
+                const akhirL = mutAwalL + mutLahirL - mutMatiL + mutDatangL - mutPindahL;
+                const akhirP = mutAwalP + mutLahirP - mutMatiP + mutDatangP - mutPindahP;
+                const akhirTotal = akhirL + akhirP;
+                return (
+                  <div className="bg-emerald-100/60 dark:bg-emerald-950/60 p-4 rounded-2xl border border-emerald-300 dark:border-emerald-800 space-y-1 text-xs">
+                    <div className="flex items-center justify-between">
+                      <span className="font-bold text-emerald-900 dark:text-emerald-200 uppercase tracking-wider text-[11px]">
+                        🏁 Penduduk Akhir Bulan ({mutBulan} {mutTahun}) - Kalkulasi Otomatis
+                      </span>
+                      <span className="text-sm font-extrabold text-[#7a1f2b] dark:text-rose-400">
+                        {akhirTotal.toLocaleString('id-ID')} jiwa
+                      </span>
+                    </div>
+                    <p className="text-emerald-800 dark:text-emerald-300">
+                      • Laki-laki: <strong>{akhirL.toLocaleString('id-ID')}</strong> ({mutAwalL} awal + {mutLahirL} lahir - {mutMatiL} mati + {mutDatangL} datang - {mutPindahL} pindah)
+                    </p>
+                    <p className="text-emerald-800 dark:text-emerald-300">
+                      • Perempuan: <strong>{akhirP.toLocaleString('id-ID')}</strong> ({mutAwalP} awal + {mutLahirP} lahir - {mutMatiP} mati + {mutDatangP} datang - {mutPindahP} pindah)
+                    </p>
+                  </div>
+                );
+              })()}
+
+              <div className="flex justify-end gap-3 pt-3 border-t border-gray-100 dark:border-gray-700">
+                <button
+                  type="button"
+                  onClick={() => setShowMutasiModal(false)}
+                  className="px-4 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 text-gray-700 dark:text-gray-200 text-xs font-semibold rounded-xl transition"
+                >
+                  Batal
+                </button>
+                <button
+                  type="submit"
+                  disabled={submitting}
+                  className="px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl shadow-md transition disabled:opacity-50"
+                >
+                  {submitting ? 'Menyimpan...' : '💾 Simpan Data Mutasi'}
+                </button>
               </div>
             </form>
           </div>
