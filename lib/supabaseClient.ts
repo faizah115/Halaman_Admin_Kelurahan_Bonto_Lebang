@@ -291,6 +291,44 @@ export async function getStunting() {
 
 export const defaultMutasiBulanan = [
   {
+    bulan: 'Januari',
+    tahun: 2026,
+    periode: 'Januari 2026',
+    luas_wilayah: '301 Km',
+    jumlah_kk: 1127,
+    awal_bulan: {
+      total: 3692,
+      laki_laki: 1872,
+      perempuan: 1820,
+    },
+    kelahiran: {
+      total: 5,
+      laki_laki: 4,
+      perempuan: 1,
+    },
+    kematian: {
+      total: 2,
+      laki_laki: 2,
+      perempuan: 0,
+    },
+    pendatang: {
+      total: 0,
+      laki_laki: 0,
+      perempuan: 0,
+    },
+    pindah: {
+      total: 1,
+      laki_laki: 1,
+      perempuan: 0,
+    },
+    akhir_bulan: {
+      // L: 1872+4-2+0-1=1873  P: 1820+1-0+0-0=1821
+      total: 3694,
+      laki_laki: 1873,
+      perempuan: 1821,
+    },
+  },
+  {
     bulan: 'Februari',
     tahun: 2026,
     periode: 'Februari 2026',
@@ -322,9 +360,124 @@ export const defaultMutasiBulanan = [
       perempuan: 2,
     },
     akhir_bulan: {
+      // L: 1873+2-0+0-3=1872  P: 1821+3-3+0-2=1819
       total: 3691,
       laki_laki: 1872,
       perempuan: 1819,
+    },
+  },
+  {
+    bulan: 'Maret',
+    tahun: 2026,
+    periode: 'Maret 2026',
+    luas_wilayah: '301 Km',
+    jumlah_kk: 1126,
+    awal_bulan: {
+      total: 3691,
+      laki_laki: 1872,
+      perempuan: 1819,
+    },
+    kelahiran: {
+      total: 5,
+      laki_laki: 3,
+      perempuan: 2,
+    },
+    kematian: {
+      total: 2,
+      laki_laki: 1,
+      perempuan: 1,
+    },
+    pendatang: {
+      total: 1,
+      laki_laki: 1,
+      perempuan: 0,
+    },
+    pindah: {
+      total: 1,
+      laki_laki: 0,
+      perempuan: 1,
+    },
+    akhir_bulan: {
+      // Data resmi laporan: L: 1874, P: 1820 (Total 3694 ✓)
+      total: 3694,
+      laki_laki: 1874,
+      perempuan: 1820,
+    },
+  },
+  {
+    bulan: 'Mei',
+    tahun: 2026,
+    periode: 'Mei 2026',
+    luas_wilayah: '301 Km',
+    jumlah_kk: 1128,
+    awal_bulan: {
+      total: 3700,
+      laki_laki: 1876,
+      perempuan: 1824,
+    },
+    kelahiran: {
+      total: 5,
+      laki_laki: 1,
+      perempuan: 4,
+    },
+    kematian: {
+      total: 3,
+      laki_laki: 2,
+      perempuan: 1,
+    },
+    pendatang: {
+      total: 1,
+      laki_laki: 1,
+      perempuan: 0,
+    },
+    pindah: {
+      total: 0,
+      laki_laki: 0,
+      perempuan: 0,
+    },
+    akhir_bulan: {
+      // Data resmi laporan: L: 1875, P: 1827 (Total 3702 ✓)
+      total: 3702,
+      laki_laki: 1875,
+      perempuan: 1827,
+    },
+  },
+  {
+    bulan: 'Juli',
+    tahun: 2026,
+    periode: 'Juli 2026',
+    luas_wilayah: '301 Km',
+    jumlah_kk: 1129,
+    awal_bulan: {
+      total: 3700,
+      laki_laki: 1875,
+      perempuan: 1825,
+    },
+    kelahiran: {
+      total: 2,
+      laki_laki: 1,
+      perempuan: 1,
+    },
+    kematian: {
+      total: 4,
+      laki_laki: 2,
+      perempuan: 2,
+    },
+    pendatang: {
+      total: 4,
+      laki_laki: 1,
+      perempuan: 3,
+    },
+    pindah: {
+      total: 3,
+      laki_laki: 0,
+      perempuan: 3,
+    },
+    akhir_bulan: {
+      // L: 1875+1-2+1-0=1875  P: 1825+1-2+3-3=1824
+      total: 3699,
+      laki_laki: 1875,
+      perempuan: 1824,
     },
   },
 ];

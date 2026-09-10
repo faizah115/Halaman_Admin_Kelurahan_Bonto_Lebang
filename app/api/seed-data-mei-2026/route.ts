@@ -6,7 +6,7 @@ import { supabase } from '@/lib/supabaseClient';
  * Menyimpan data mutasi penduduk Bulan Mei 2026 ke database Supabase
  *
  * Data Sumber:
- * - Luas Wilayah       : 301 Km / Ha
+ * - Luas Wilayah       : 301 Km
  * - Jumlah KK          : 1.128 KK
  * - Awal Bulan Mei     : 3.700 jiwa (L: 1.876, P: 1.824)
  * - Kelahiran          : 5 jiwa (L: 1, P: 4)
@@ -52,7 +52,7 @@ export async function GET() {
         perempuan: 1827,
       },
       jumlah_kk: 1128,
-      luas_wilayah: '301 Ha',
+      luas_wilayah: '301 Km',
     };
 
     // ─── Baca profil existing ─────────────────────────────────────────────────
@@ -106,7 +106,7 @@ export async function GET() {
       message: 'Data mutasi penduduk Mei 2026 berhasil disimpan ke database.',
       summary: {
         periode: 'Mei 2026',
-        luas_wilayah: '301 Ha',
+        luas_wilayah: '301 Km',
         jumlah_kk: '1.128 KK',
         awal_bulan: { total: 3700, laki_laki: 1876, perempuan: 1824 },
         perubahan: {

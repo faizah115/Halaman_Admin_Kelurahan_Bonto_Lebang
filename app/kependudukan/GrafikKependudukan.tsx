@@ -573,75 +573,6 @@ export function MutasiBulananSection({ data }: { data: any[] }) {
         </div>
       </div>
 
-      {/* Rincian Komponen Mutasi Bulan Ini */}
-      <div>
-        <h3 className="text-base font-bold text-gray-800 dark:text-white mb-4 flex items-center gap-2">
-          <span>🔄</span> Rincian Perubahan Penduduk Selama Bulan {current.bulan} {current.tahun}
-        </h3>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {/* Kelahiran */}
-          <div className="bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-900 rounded-2xl p-5">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider">Kelahiran (+)</span>
-              <span className="text-lg">👶</span>
-            </div>
-            <p className="text-2xl font-extrabold text-emerald-600 dark:text-emerald-400">
-              +{current.kelahiran?.total || 0} Jiwa
-            </p>
-            <div className="mt-2 text-xs text-gray-600 dark:text-gray-400 space-y-0.5">
-              <p>👨 Laki-laki: <strong className="text-gray-900 dark:text-white">{current.kelahiran?.laki_laki || 0}</strong></p>
-              <p>👩 Perempuan: <strong className="text-gray-900 dark:text-white">{current.kelahiran?.perempuan || 0}</strong></p>
-            </div>
-          </div>
-
-          {/* Kematian */}
-          <div className="bg-rose-50/50 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-900 rounded-2xl p-5">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-bold text-rose-700 dark:text-rose-400 uppercase tracking-wider">Kematian (-)</span>
-              <span className="text-lg">⚰️</span>
-            </div>
-            <p className="text-2xl font-extrabold text-rose-600 dark:text-rose-400">
-              -{current.kematian?.total || 0} Jiwa
-            </p>
-            <div className="mt-2 text-xs text-gray-600 dark:text-gray-400 space-y-0.5">
-              <p>👨 Laki-laki: <strong className="text-gray-900 dark:text-white">{current.kematian?.laki_laki || 0}</strong></p>
-              <p>👩 Perempuan: <strong className="text-gray-900 dark:text-white">{current.kematian?.perempuan || 0}</strong></p>
-            </div>
-          </div>
-
-          {/* Pendatang */}
-          <div className="bg-blue-50/50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-900 rounded-2xl p-5">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-bold text-blue-700 dark:text-blue-400 uppercase tracking-wider">Pendatang (+)</span>
-              <span className="text-lg">🛬</span>
-            </div>
-            <p className="text-2xl font-extrabold text-blue-600 dark:text-blue-400">
-              +{current.pendatang?.total || 0} Jiwa
-            </p>
-            <div className="mt-2 text-xs text-gray-600 dark:text-gray-400 space-y-0.5">
-              <p>👨 Laki-laki: <strong className="text-gray-900 dark:text-white">{current.pendatang?.laki_laki || 0}</strong></p>
-              <p>👩 Perempuan: <strong className="text-gray-900 dark:text-white">{current.pendatang?.perempuan || 0}</strong></p>
-            </div>
-          </div>
-
-          {/* Pindah */}
-          <div className="bg-amber-50/50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900 rounded-2xl p-5">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-bold text-amber-700 dark:text-amber-400 uppercase tracking-wider">Pindah (-)</span>
-              <span className="text-lg">🛫</span>
-            </div>
-            <p className="text-2xl font-extrabold text-amber-600 dark:text-amber-400">
-              -{current.pindah?.total || 0} Jiwa
-            </p>
-            <div className="mt-2 text-xs text-gray-600 dark:text-gray-400 space-y-0.5">
-              <p>👨 Laki-laki: <strong className="text-gray-900 dark:text-white">{current.pindah?.laki_laki || 0}</strong></p>
-              <p>👩 Perempuan: <strong className="text-gray-900 dark:text-white">{current.pindah?.perempuan || 0}</strong></p>
-            </div>
-          </div>
-        </div>
-      </div>
-
       {/* Tabel Parameter / Indikator Kependudukan */}
       <div className="bg-white dark:bg-gray-800 rounded-2xl p-5 border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden space-y-3">
         <h4 className="text-sm font-bold text-gray-800 dark:text-white flex items-center justify-between">
@@ -705,63 +636,6 @@ export function MutasiBulananSection({ data }: { data: any[] }) {
                   <span className="text-base font-extrabold text-[#7a1f2b] dark:text-rose-400">{(current.akhir_bulan?.total ?? 0).toLocaleString('id-ID')} jiwa</span>{' '}
                   <span className="text-xs font-semibold text-emerald-700 dark:text-emerald-300">({(current.akhir_bulan?.laki_laki ?? 0).toLocaleString('id-ID')} Laki-laki, {(current.akhir_bulan?.perempuan ?? 0).toLocaleString('id-ID')} Perempuan)</span>
                 </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      {/* Tabel Ringkasan Lengkap */}
-      <div className="bg-gray-50 dark:bg-gray-900/50 rounded-2xl p-5 border border-gray-100 dark:border-gray-700 overflow-hidden">
-        <h4 className="text-sm font-bold text-gray-800 dark:text-white mb-3">
-          📊 Matriks Mutasi Penduduk Periode {current.bulan} {current.tahun}
-        </h4>
-        <div className="overflow-x-auto">
-          <table className="w-full text-xs md:text-sm text-left">
-            <thead>
-              <tr className="bg-[#7a1f2b] text-white">
-                <th className="px-4 py-3 font-bold rounded-l-xl">Komponen Data</th>
-                <th className="px-4 py-3 font-bold text-right">Laki-laki</th>
-                <th className="px-4 py-3 font-bold text-right">Perempuan</th>
-                <th className="px-4 py-3 font-bold text-right rounded-r-xl">Total Jiwa</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-              <tr className="hover:bg-white dark:hover:bg-gray-800 transition">
-                <td className="px-4 py-3 font-semibold text-gray-800 dark:text-gray-200">Penduduk Awal Bulan</td>
-                <td className="px-4 py-3 text-right text-gray-700 dark:text-gray-300 font-medium">{current.awal_bulan?.laki_laki}</td>
-                <td className="px-4 py-3 text-right text-gray-700 dark:text-gray-300 font-medium">{current.awal_bulan?.perempuan}</td>
-                <td className="px-4 py-3 text-right font-bold text-sky-600 dark:text-sky-400">{current.awal_bulan?.total}</td>
-              </tr>
-              <tr className="hover:bg-white dark:hover:bg-gray-800 transition">
-                <td className="px-4 py-3 font-semibold text-emerald-700 dark:text-emerald-400">+ Kelahiran</td>
-                <td className="px-4 py-3 text-right text-emerald-700 dark:text-emerald-400 font-medium">+{current.kelahiran?.laki_laki}</td>
-                <td className="px-4 py-3 text-right text-emerald-700 dark:text-emerald-400 font-medium">+{current.kelahiran?.perempuan}</td>
-                <td className="px-4 py-3 text-right font-bold text-emerald-600 dark:text-emerald-400">+{current.kelahiran?.total}</td>
-              </tr>
-              <tr className="hover:bg-white dark:hover:bg-gray-800 transition">
-                <td className="px-4 py-3 font-semibold text-rose-700 dark:text-rose-400">- Kematian</td>
-                <td className="px-4 py-3 text-right text-rose-700 dark:text-rose-400 font-medium">-{current.kematian?.laki_laki}</td>
-                <td className="px-4 py-3 text-right text-rose-700 dark:text-rose-400 font-medium">-{current.kematian?.perempuan}</td>
-                <td className="px-4 py-3 text-right font-bold text-rose-600 dark:text-rose-400">-{current.kematian?.total}</td>
-              </tr>
-              <tr className="hover:bg-white dark:hover:bg-gray-800 transition">
-                <td className="px-4 py-3 font-semibold text-blue-700 dark:text-blue-400">+ Pendatang</td>
-                <td className="px-4 py-3 text-right text-blue-700 dark:text-blue-400 font-medium">+{current.pendatang?.laki_laki}</td>
-                <td className="px-4 py-3 text-right text-blue-700 dark:text-blue-400 font-medium">+{current.pendatang?.perempuan}</td>
-                <td className="px-4 py-3 text-right font-bold text-blue-600 dark:text-blue-400">+{current.pendatang?.total}</td>
-              </tr>
-              <tr className="hover:bg-white dark:hover:bg-gray-800 transition">
-                <td className="px-4 py-3 font-semibold text-amber-700 dark:text-amber-400">- Pindah</td>
-                <td className="px-4 py-3 text-right text-amber-700 dark:text-amber-400 font-medium">-{current.pindah?.laki_laki}</td>
-                <td className="px-4 py-3 text-right text-amber-700 dark:text-amber-400 font-medium">-{current.pindah?.perempuan}</td>
-                <td className="px-4 py-3 text-right font-bold text-amber-600 dark:text-amber-400">-{current.pindah?.total}</td>
-              </tr>
-              <tr className="bg-emerald-100/60 dark:bg-emerald-950/60 font-bold">
-                <td className="px-4 py-3 text-gray-900 dark:text-white">Penduduk Akhir Bulan</td>
-                <td className="px-4 py-3 text-right text-gray-900 dark:text-white">{current.akhir_bulan?.laki_laki}</td>
-                <td className="px-4 py-3 text-right text-gray-900 dark:text-white">{current.akhir_bulan?.perempuan}</td>
-                <td className="px-4 py-3 text-right text-[#7a1f2b] dark:text-red-400 text-base">{current.akhir_bulan?.total} Jiwa</td>
               </tr>
             </tbody>
           </table>

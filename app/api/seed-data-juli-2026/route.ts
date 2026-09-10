@@ -6,7 +6,7 @@ import { supabase } from '@/lib/supabaseClient';
  * Menyimpan data mutasi penduduk Bulan Juli 2026 ke database Supabase
  *
  * Data Sumber:
- * - Luas Wilayah       : 301 Ha
+ * - Luas Wilayah       : 301 Km
  * - Jumlah KK          : 1.129 KK
  * - Awal Bulan Juli    : 3.700 jiwa (L: 1.875, P: 1.825)
  * - Kelahiran          : 2 jiwa (L: 1, P: 1)
@@ -55,12 +55,12 @@ export async function GET() {
         perempuan: 1824,
       },
       jumlah_kk: 1129,
-      luas_wilayah: '301 Ha',
+      luas_wilayah: '301 Km',
     };
 
     // ─── 2. Data Umum Wilayah (diperbarui dengan data akhir bulan Juli 2026) ─
     const dataUmum = [
-      { id: 1, keterangan: 'Luas Wilayah', jumlah: '301 Ha', icon: '🗺️' },
+      { id: 1, keterangan: 'Luas Wilayah', jumlah: '301 Km', icon: '🗺️' },
       { id: 2, keterangan: 'Jumlah Penduduk', jumlah: '3.699 Jiwa', icon: '👥' },
       { id: 3, keterangan: 'Jumlah KK', jumlah: '1.129 KK', icon: '🏠' },
       { id: 4, keterangan: 'Laki-laki', jumlah: '1.875 Jiwa', icon: '👨' },
@@ -143,7 +143,7 @@ export async function GET() {
       message: 'Data mutasi penduduk Juli 2026 berhasil disimpan ke database.',
       summary: {
         periode: 'Juli 2026',
-        luas_wilayah: '301 Ha',
+        luas_wilayah: '301 Km',
         jumlah_kk: '1.129 KK',
         awal_bulan: { total: 3700, laki_laki: 1875, perempuan: 1825 },
         perubahan: {
