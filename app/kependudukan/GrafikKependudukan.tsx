@@ -641,6 +641,76 @@ export function MutasiBulananSection({ data }: { data: any[] }) {
           </table>
         </div>
       </div>
+
+      {/* Tabel Riwayat Seluruh Periode */}
+      {data.length > 0 && (
+        <div className="pt-2">
+          <h3 className="font-bold text-sm text-gray-700 dark:text-gray-300 mb-3 flex items-center gap-1.5">
+            <span>🗓️</span> Riwayat Seluruh Periode Mutasi Penduduk
+          </h3>
+          <div className="overflow-x-auto rounded-xl border border-gray-200 dark:border-gray-700">
+            <table className="w-full text-xs text-left">
+              <thead className="bg-gray-100 dark:bg-gray-700/60 text-gray-700 dark:text-gray-300 font-semibold">
+                <tr>
+                  <th className="px-3.5 py-2.5">Periode</th>
+                  <th className="px-3.5 py-2.5">Luas</th>
+                  <th className="px-3.5 py-2.5">KK</th>
+                  <th className="px-3.5 py-2.5 text-right">Awal Bulan</th>
+                  <th className="px-3.5 py-2.5 text-right">Lahir</th>
+                  <th className="px-3.5 py-2.5 text-right">Mati</th>
+                  <th className="px-3.5 py-2.5 text-right">Datang</th>
+                  <th className="px-3.5 py-2.5 text-right">Pindah</th>
+                  <th className="px-3.5 py-2.5 text-right">Akhir Bulan</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
+                {data.map((m, idx) => (
+                  <tr
+                    key={idx}
+                    className={`cursor-pointer transition hover:bg-indigo-50/40 dark:hover:bg-indigo-950/30 ${
+                      selectedIdx === idx
+                        ? 'bg-indigo-50/70 dark:bg-indigo-950/50 font-medium'
+                        : ''
+                    }`}
+                    onClick={() => setSelectedIdx(idx)}
+                  >
+                    <td className="px-3.5 py-2.5 font-bold text-gray-800 dark:text-white whitespace-nowrap">
+                      {m.periode || `${m.bulan} ${m.tahun}`}
+                    </td>
+                    <td className="px-3.5 py-2.5 text-gray-600 dark:text-gray-300 whitespace-nowrap">
+                      {m.luas_wilayah || '301 Km²'}
+                    </td>
+                    <td className="px-3.5 py-2.5 text-gray-600 dark:text-gray-300">
+                      {(m.jumlah_kk ?? 1127).toLocaleString('id-ID')}
+                    </td>
+                    <td className="px-3.5 py-2.5 text-right text-sky-600 dark:text-sky-400 font-semibold">
+                      {(m.awal_bulan?.total ?? 0).toLocaleString('id-ID')}
+                    </td>
+                    <td className="px-3.5 py-2.5 text-right text-emerald-600 font-semibold">
+                      +{m.kelahiran?.total ?? 0}
+                    </td>
+                    <td className="px-3.5 py-2.5 text-right text-rose-600 font-semibold">
+                      -{m.kematian?.total ?? 0}
+                    </td>
+                    <td className="px-3.5 py-2.5 text-right text-blue-600 font-semibold">
+                      +{m.pendatang?.total ?? 0}
+                    </td>
+                    <td className="px-3.5 py-2.5 text-right text-amber-600 font-semibold">
+                      -{m.pindah?.total ?? 0}
+                    </td>
+                    <td className="px-3.5 py-2.5 text-right font-bold text-gray-900 dark:text-white">
+                      {(m.akhir_bulan?.total ?? 0).toLocaleString('id-ID')}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <p className="text-xs text-gray-400 dark:text-gray-500 mt-2 text-center italic">
+            Klik baris untuk melihat detail periode tersebut
+          </p>
+        </div>
+      )}
     </div>
   );
 }
