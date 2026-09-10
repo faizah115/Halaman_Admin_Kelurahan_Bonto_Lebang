@@ -405,6 +405,43 @@ export const defaultMutasiBulanan = [
     },
   },
   {
+    bulan: 'April',
+    tahun: 2026,
+    periode: 'April 2026',
+    luas_wilayah: '301 Km²',
+    jumlah_kk: 1128,
+    awal_bulan: {
+      total: 3694,
+      laki_laki: 1874,
+      perempuan: 1820,
+    },
+    kelahiran: {
+      total: 4,
+      laki_laki: 2,
+      perempuan: 2,
+    },
+    kematian: {
+      total: 3,
+      laki_laki: 1,
+      perempuan: 2,
+    },
+    pendatang: {
+      total: 9,
+      laki_laki: 5,
+      perempuan: 4,
+    },
+    pindah: {
+      total: 4,
+      laki_laki: 4,
+      perempuan: 0,
+    },
+    akhir_bulan: {
+      total: 3700,
+      laki_laki: 1876,
+      perempuan: 1824,
+    },
+  },
+  {
     bulan: 'Mei',
     tahun: 2026,
     periode: 'Mei 2026',
