@@ -691,15 +691,26 @@ export default function AdminKependudukanPage() {
   // ─── HANDLERS PROFIL META (PENDIDIKAN & PERKAWINAN) ──────────────────────
   const saveProfilMeta = async (updatedMeta: any) => {
     setSubmitting(true);
-    const jsonStr = JSON.stringify(updatedMeta);
+    let mergedMeta = { ...rawMeta, ...updatedMeta };
+    
+    if (profilId) {
+      const { data: dbData } = await supabase.from('profil').select('sejarah').eq('id', profilId).maybeSingle();
+      if (dbData?.sejarah && typeof dbData.sejarah === 'string' && dbData.sejarah.startsWith('{')) {
+        try {
+          mergedMeta = { ...JSON.parse(dbData.sejarah), ...updatedMeta };
+        } catch (e) { }
+      }
+    }
+
+    const jsonStr = JSON.stringify(mergedMeta);
     if (profilId) {
       const { error } = await supabase.from('profil').update({ sejarah: jsonStr }).eq('id', profilId);
       if (error) alert('Gagal update data profil: ' + error.message);
-      else { setRawMeta(updatedMeta); fetchAllData(); }
+      else { setRawMeta(mergedMeta); fetchAllData(); }
     } else {
       const { error, data } = await supabase.from('profil').insert([{ lokasi: 'Bonto Lebang', sejarah: jsonStr }]).select().single();
       if (error) alert('Gagal simpan data profil: ' + error.message);
-      else { if (data) setProfilId(data.id); setRawMeta(updatedMeta); fetchAllData(); }
+      else { if (data) setProfilId(data.id); setRawMeta(mergedMeta); fetchAllData(); }
     }
     setSubmitting(false);
   };

@@ -9,6 +9,7 @@ export async function getProfil() {
   const { data, error } = await supabase
     .from('profil')
     .select('*')
+    .order('id', { ascending: false })
     .limit(1)
     .maybeSingle();
 

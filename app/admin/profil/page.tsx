@@ -105,8 +105,18 @@ export default function AdminProfilPage() {
     e.preventDefault();
     setSaving(true);
 
+    let latestMeta = { ...rawMeta };
+    if (profilId) {
+      const { data: dbData } = await supabase.from('profil').select('sejarah').eq('id', profilId).maybeSingle();
+      if (dbData?.sejarah && typeof dbData.sejarah === 'string' && dbData.sejarah.startsWith('{')) {
+        try {
+          latestMeta = { ...JSON.parse(dbData.sejarah), ...rawMeta };
+        } catch (e) { }
+      }
+    }
+
     const metadata = {
-      ...rawMeta,
+      ...latestMeta,
       hero_judul: heroJudul,
       hero_subjudul: heroSubjudul,
       hero_banner_url: heroBannerUrl,

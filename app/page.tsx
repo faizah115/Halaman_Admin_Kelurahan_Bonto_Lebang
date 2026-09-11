@@ -122,17 +122,25 @@ export default async function Home() {
 
               {/* Content Sambutan Lurah (Dinamis dari Admin / Fallback) */}
               {profilData?.deskripsi ? (
-                <div
-                  style={{
-                    fontSize: "clamp(14px, 1.5vw, 17px)",
-                    fontWeight: 400,
-                    color: "#1A1A1A",
-                    lineHeight: 1.75,
-                    marginBottom: "16px",
-                  }}
-                  className="whitespace-pre-line space-y-4"
-                >
-                  {profilData.deskripsi}
+                <div className="space-y-4">
+                  {profilData.deskripsi.split(/\n+/).map((para: string, idx: number) => (
+                    para.trim() ? (
+                      <p
+                        key={idx}
+                        style={{
+                          fontSize: "clamp(14px, 1.5vw, 17px)",
+                          fontWeight: 400,
+                          color: "#1A1A1A",
+                          lineHeight: 1.75,
+                          textAlign: "justify",
+                          textJustify: "inter-word",
+                        }}
+                        className="text-justify dark:text-gray-200"
+                      >
+                        {para.trim()}
+                      </p>
+                    ) : null
+                  ))}
                 </div>
               ) : (
                 <>
@@ -143,7 +151,10 @@ export default async function Home() {
                       color: "#1A1A1A",
                       lineHeight: 1.75,
                       marginBottom: "16px",
+                      textAlign: "justify",
+                      textJustify: "inter-word",
                     }}
+                    className="text-justify dark:text-gray-200"
                   >
                     Selamat datang di website resmi Kelurahan {lokasi || "Bonto Lebang"}.
                   </p>
@@ -156,10 +167,12 @@ export default async function Home() {
                       lineHeight: 1.75,
                       marginBottom: "16px",
                       textAlign: "justify",
+                      textJustify: "inter-word",
                     }}
+                    className="text-justify dark:text-gray-200"
                   >
                     Sebagai wujud komitmen kami dalam memberikan pelayanan yang tanggap dan menampung aspirasi masyarakat, kami menghadirkan{" "}
-                    <strong style={{ fontWeight: 700, color: "#1A1A1A" }}>
+                    <strong style={{ fontWeight: 700, color: "#1A1A1A" }} className="dark:text-white">
                       Website Digital Kelurahan {lokasi || "Bonto Lebang"}
                     </strong>
                     . Website ini memudahkan masyarakat dalam mengakses layanan pengaduan, saran dan informasi kelurahan secara online kapan saja dan di mana saja, sehingga hubungan antara pemerintah kelurahan dan warga dapat terjalin lebih erat.
