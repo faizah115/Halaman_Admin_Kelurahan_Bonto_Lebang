@@ -111,7 +111,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           {/* Copyright bar */}
           <div className="border-t border-white/20">
             <div className="max-w-7xl mx-auto px-6 py-5 flex flex-col md:flex-row justify-between items-center gap-2 text-xs text-red-100">
-              <p>© {new Date().getFullYear()} KKN UIN Alauddin Makassar Angkatan 79 - Posko 03 Kec Bissapu Kel.Bonto Lebang</p>
+              <p>© {new Date().getFullYear()} KKN UIN Alauddin Makassar Angkatan 79 - Posko 03 Kec.Bissapu Kel.Bonto Lebang</p>
               <p>Dikembangkan untuk mendukung informasi & pengaduan masyarakat.</p>
             </div>
           </div>
